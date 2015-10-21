@@ -1,0 +1,7 @@
+C:\Users\tparks\Documents\GitHub\NRest\NRest\obj\Debug\NRest.csprojResolveAssemblyReference.cache
+C:\Users\tparks\Documents\GitHub\NRest\NRest\bin\Debug\NRest.dll
+C:\Users\tparks\Documents\GitHub\NRest\NRest\bin\Debug\NRest.pdb
+C:\Users\tparks\Documents\GitHub\NRest\NRest\bin\Debug\Newtonsoft.Json.dll
+C:\Users\tparks\Documents\GitHub\NRest\NRest\bin\Debug\Newtonsoft.Json.xml
+C:\Users\tparks\Documents\GitHub\NRest\NRest\obj\Debug\NRest.dll
+C:\Users\tparks\Documents\GitHub\NRest\NRest\obj\Debug\NRest.pdb

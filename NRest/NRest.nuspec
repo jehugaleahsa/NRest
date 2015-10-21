@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+	<title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+	<projectUrl>https://github.com/jehugaleahsa/NRest</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <copyright>Copyright 2016</copyright>
+    <tags>REST fluent RESTful HTTP API</tags>
+    <dependencies>
+        <dependency id="Newtonsoft.Json" version="(5.0,)" />
+    </dependencies>
+  </metadata>
+</package>
