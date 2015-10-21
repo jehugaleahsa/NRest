@@ -1,7 +1,0 @@
-C:\Users\tparks\Documents\GitHub\NRest\NRest\bin\Release\NRest.dll
-C:\Users\tparks\Documents\GitHub\NRest\NRest\bin\Release\NRest.pdb
-C:\Users\tparks\Documents\GitHub\NRest\NRest\bin\Release\Newtonsoft.Json.dll
-C:\Users\tparks\Documents\GitHub\NRest\NRest\bin\Release\Newtonsoft.Json.xml
-C:\Users\tparks\Documents\GitHub\NRest\NRest\obj\Release\NRest.csprojResolveAssemblyReference.cache
-C:\Users\tparks\Documents\GitHub\NRest\NRest\obj\Release\NRest.dll
-C:\Users\tparks\Documents\GitHub\NRest\NRest\obj\Release\NRest.pdb
