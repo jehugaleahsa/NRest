@@ -7,7 +7,7 @@ namespace NRest
 {
     public class RestClient
     {
-        private readonly Uri baseUri;
+        private readonly string baseUri;
 
         public RestClient()
         {
@@ -15,7 +15,7 @@ namespace NRest
 
         public RestClient(string baseUri)
         {
-            this.baseUri = new Uri(baseUri);
+            this.baseUri = baseUri;
         }
 
         public IRequestConfiguration Get(string uriString, object uriParameters = null)
@@ -74,37 +74,38 @@ namespace NRest
 
         private Uri getUri(string uriPart, object uriParameters)
         {
-            if (baseUri == null || String.IsNullOrEmpty(baseUri.AbsoluteUri))
+            if (String.IsNullOrWhiteSpace(baseUri))
             {
-                return applyParameters(new Uri(uriPart), uriParameters);
+                return applyParameters(uriPart, uriParameters);
             }
             if (String.IsNullOrWhiteSpace(uriPart))
             {
                 return applyParameters(baseUri, uriParameters);
             }
-            UriBuilder builder = new UriBuilder(baseUri);
-            builder.Path = Regex.Replace(builder.Path + "/" + uriPart, @"/{2,}", @"/");
-            return applyParameters(builder.Uri, uriParameters);
+            string uri = baseUri;
+            if (!uri.EndsWith("/") && !uri.StartsWith(uriPart))
+            {
+                uri += "/";
+            }
+            uri += uriPart;
+            return applyParameters(uri, uriParameters);
         }
 
-        private Uri applyParameters(Uri uri, object uriParameters)
+        private Uri applyParameters(string uri, object uriParameters)
         {
             if (uriParameters == null)
             {
-                return uri;
+                return new Uri(uri);
             }
             Type parameterType = uriParameters.GetType();
             var parameterLookup = parameterType.GetProperties().ToDictionary(p => p.Name, p => p.GetValue(uriParameters));
-            UriBuilder builder = new UriBuilder(uri);
-            string path = builder.Path;
             foreach (string uriParameter in parameterLookup.Keys)
             {
                 object value = parameterLookup[uriParameter];
                 string encodedValue = value == null ? String.Empty : WebUtility.UrlEncode(value.ToString());
-                path = path.Replace("{" + uriParameter + "}", encodedValue);
+                uri = uri.Replace("{" + uriParameter + "}", encodedValue);
             }
-            builder.Path = path;
-            return builder.Uri;
+            return new Uri(uri);
         }
     }
 }

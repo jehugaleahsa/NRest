@@ -14,8 +14,8 @@ namespace NRest
         private readonly Dictionary<int, Func<HttpWebResponse, object>> codeHandlers;
         private readonly NameValueCollection headers;
         private readonly NameValueCollection queryParameters;
+        private readonly List<Action<HttpWebRequest>> configurators;
         private ICredentials credentials;
-        private Action<HttpWebRequest> configurator;
         private Func<HttpWebResponse, object> successHandler;
         private Func<HttpWebResponse, object> errorHandler;
         private Func<byte[]> bodyBuilder;
@@ -27,6 +27,7 @@ namespace NRest
             this.codeHandlers = new Dictionary<int, Func<HttpWebResponse, object>>();
             this.headers = new NameValueCollection();
             this.queryParameters = new NameValueCollection();
+            this.configurators = new List<Action<HttpWebRequest>>();
         }
 
         public IRequestConfiguration WithCredentials(ICredentials credentials)
@@ -37,7 +38,7 @@ namespace NRest
 
         public IRequestConfiguration ConfigureRequest(Action<HttpWebRequest> configurator)
         {
-            this.configurator = configurator;
+            this.configurators.Add(configurator);
             return this;
         }
 
@@ -100,8 +101,7 @@ namespace NRest
             }
             catch (WebException exception)
             {
-                HttpWebResponse response = (HttpWebResponse)exception.Response;
-                return getErrorResult(request, response);
+                return getErrorResult(request, exception);
             }
         }
 
@@ -115,8 +115,7 @@ namespace NRest
             }
             catch (WebException exception)
             {
-                HttpWebResponse response = (HttpWebResponse)exception.Response;
-                return getErrorResult(request, response);
+                return getErrorResult(request, exception);
             }
         }
 
@@ -130,13 +129,13 @@ namespace NRest
             {
                 request.Credentials = credentials;
             }
+            foreach (var configurator in configurators)
+            {
+                configurator(request);
+            }
             if (bodyBuilder != null)
             {
                 buildbody(request);
-            }
-            if (configurator != null)
-            {
-                configurator(request);
             }
             return request;
         }
@@ -192,9 +191,10 @@ namespace NRest
             return result;
         }
 
-        private IRestResponse getErrorResult(HttpWebRequest request, HttpWebResponse response)
+        private IRestResponse getErrorResult(HttpWebRequest request, WebException exception)
         {
             RestResponse result = new RestResponse();
+            HttpWebResponse response = (HttpWebResponse)exception.Response;
             result.StatusCode = response.StatusCode;
             result.HasError = true;
             if (codeHandlers.ContainsKey((int)response.StatusCode))
@@ -208,7 +208,7 @@ namespace NRest
             }
             else
             {
-                throw new RestException(request, "No error handler defined for the request.");
+                throw new RestException(request, "No error handler defined for the request.", exception);
             }
             return result;
         }

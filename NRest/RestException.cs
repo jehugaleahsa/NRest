@@ -5,12 +5,18 @@ namespace NRest
 {
     public class RestException : Exception
     {
-        private readonly WebRequest request;
-
         internal RestException(WebRequest request, string message)
             : base(message)
         {
-            this.request = request;
+            WebRequest = request;
         }
+
+        internal RestException(WebRequest request, string message, Exception innerException)
+            : base(message, innerException)
+        {
+            WebRequest = request;
+        }
+
+        public WebRequest WebRequest { get; private set; }
     }
 }

@@ -7,44 +7,54 @@ namespace NRest.Json
 {
     public static class JsonExtensions
     {
+        private const string contentType = "application/json";
+
         public static IRequestConfiguration WithJsonBody(this IRequestConfiguration configuration, object body)
         {
-            return configuration.WithBody(() => 
-            {
-                string serialized = JsonConvert.SerializeObject(body);
-                byte[] encoded = Encoding.Default.GetBytes(serialized);
-                return encoded;
-            });
+            return configuration
+                .ConfigureRequest(r => r.ContentType = contentType)
+                .WithBody(() => 
+                {
+                    string serialized = JsonConvert.SerializeObject(body);
+                    byte[] encoded = Encoding.Default.GetBytes(serialized);
+                    return encoded;
+                });
         }
 
         public static IRequestConfiguration WithJsonBody(this IRequestConfiguration configuration, object body, Formatting formatting)
         {
-            return configuration.WithBody(() =>
-            {
-                string serialized = JsonConvert.SerializeObject(body, formatting);
-                byte[] encoded = Encoding.Default.GetBytes(serialized);
-                return encoded;
-            });
+            return configuration
+                .ConfigureRequest(r => r.ContentType = contentType)
+                .WithBody(() =>
+                {
+                    string serialized = JsonConvert.SerializeObject(body, formatting);
+                    byte[] encoded = Encoding.Default.GetBytes(serialized);
+                    return encoded;
+                });
         }
 
         public static IRequestConfiguration WithJsonBody(this IRequestConfiguration configuration, object body, JsonSerializerSettings settings)
         {
-            return configuration.WithBody(() =>
-            {
-                string serialized = JsonConvert.SerializeObject(body, settings);
-                byte[] encoded = Encoding.Default.GetBytes(serialized);
-                return encoded;
-            });
+            return configuration
+                .ConfigureRequest(r => r.ContentType = contentType)
+                .WithBody(() =>
+                {
+                    string serialized = JsonConvert.SerializeObject(body, settings);
+                    byte[] encoded = Encoding.Default.GetBytes(serialized);
+                    return encoded;
+                });
         }
 
         public static IRequestConfiguration WithJsonBody(this IRequestConfiguration configuration, object body, Formatting formatting, JsonSerializerSettings settings)
         {
-            return configuration.WithBody(() =>
-            {
-                string serialized = JsonConvert.SerializeObject(body, formatting, settings);
-                byte[] encoded = Encoding.Default.GetBytes(serialized);
-                return encoded;
-            });
+            return configuration
+                .ConfigureRequest(r => r.ContentType = contentType)
+                .WithBody(() =>
+                {
+                    string serialized = JsonConvert.SerializeObject(body, formatting, settings);
+                    byte[] encoded = Encoding.Default.GetBytes(serialized);
+                    return encoded;
+                });
         }
 
         public static TResult FromJson<TResult>(this HttpWebResponse response)

@@ -58,6 +58,7 @@
     <Compile Include="IRequestConfiguration.cs" />
     <Compile Include="IRestResponse.cs" />
     <Compile Include="JsonExtensions.cs" />
+    <Compile Include="PrimitiveExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestConfiguration.cs" />
     <Compile Include="RestClient.cs" />
