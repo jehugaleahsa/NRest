@@ -2,7 +2,7 @@
 
 Make REST API calls using a fluent syntax.
 
-Download using NuGet: [NDex](http://nuget.org/packages/nrest)
+Download using NuGet: [NRest](http://nuget.org/packages/nrest)
 
 ## Overview
 REST is easy, so interacting with a REST API should be easy too! The aim of NRest is provide a simple library that encapsulates of a lot of the heavy-lifting involved with building REST requests. REST is a pretty flexible and open standard, so a good REST client shouldn't prevent you from tweaking the request to handle those special cases, either.

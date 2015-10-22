@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using System.Text.RegularExpressions;
 
 namespace NRest
 {
@@ -82,12 +81,8 @@ namespace NRest
             {
                 return applyParameters(baseUri, uriParameters);
             }
-            string uri = baseUri;
-            if (!uri.EndsWith("/") && !uri.StartsWith(uriPart))
-            {
-                uri += "/";
-            }
-            uri += uriPart;
+            // This code will not work if someone passes in a scheme as base URL
+            string uri = baseUri.TrimEnd('/') + "/" + uriPart.TrimStart('/');
             return applyParameters(uri, uriParameters);
         }
 

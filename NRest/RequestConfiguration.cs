@@ -18,6 +18,7 @@ namespace NRest
         private ICredentials credentials;
         private Func<HttpWebResponse, object> successHandler;
         private Func<HttpWebResponse, object> errorHandler;
+        private Func<HttpWebResponse, object> elseHandler;
         private Func<byte[]> bodyBuilder;
 
         public RequestConfiguration(Uri uri, string method)
@@ -89,6 +90,12 @@ namespace NRest
             return When((int)statusCode, handler);
         }
 
+        public IRequestConfiguration Else(Func<HttpWebResponse, object> handler)
+        {
+            this.elseHandler = handler;
+            return this;
+        }
+
         public IRestResponse Execute()
         {
             HttpWebRequest request = createRequest();
@@ -124,7 +131,7 @@ namespace NRest
             Uri fullUri = buildUri();
             HttpWebRequest request = HttpWebRequest.CreateHttp(fullUri);
             request.Method = method;
-            request.Headers.Add(headers);
+            setHeaders(request);
             if (credentials != null)
             {
                 request.Credentials = credentials;
@@ -161,6 +168,59 @@ namespace NRest
             return String.Join("&", pairs);
         }
 
+        private void setHeaders(HttpWebRequest request)
+        {
+            Dictionary<string, Action<string>> specialHeaders = new Dictionary<string, Action<string>>
+            {
+                { "Accept", x => request.Accept = x },
+                { "Content-Type", x => request.ContentType = x },
+                { "Connection", x => request.Connection = x },
+                { "Content-Length", x => 
+                    {
+                        long length;
+                        if (Int64.TryParse(x, out length))
+                        {
+                            request.ContentLength = length;
+                        }
+                    }
+                },
+                { "Expect", x => request.Expect = x },
+                { "Host", x => request.Host = x },
+                { "Referer", x => request.Referer = x },
+                { "Transfer-Encoding", x => request.TransferEncoding = x },
+                { "User-Agent", x => request.UserAgent = x },
+                { "If-Modified-Since", x => 
+                    {
+                        DateTime date;
+                        if (DateTime.TryParse(x, out date))
+                        {
+                            request.IfModifiedSince = date;
+                        }
+                    }
+                },
+                { "Date", x =>
+                    {
+                        DateTime date;
+                        if (DateTime.TryParse(x, out date))
+                        {
+                            request.Date = date;
+                        }
+                    }
+                }
+            };
+            NameValueCollection headersCopy = new NameValueCollection(headers);
+            foreach (string header in specialHeaders.Keys)
+            {
+                string value = headersCopy.Get(header);
+                if (value != null)
+                {                    
+                    specialHeaders[header](value);
+                    headersCopy.Remove(header);
+                }
+            }
+            request.Headers.Add(headersCopy);
+        }
+
         private void buildbody(HttpWebRequest request)
         {
             byte[] rawBody = bodyBuilder();
@@ -184,6 +244,10 @@ namespace NRest
             {
                 result.Result = successHandler(response);
             }
+            else if (elseHandler != null)
+            {
+                result.Result = elseHandler(response);
+            }
             else
             {
                 throw new RestException(request, "No success handler defined for the request.");
@@ -205,6 +269,10 @@ namespace NRest
             else if (errorHandler != null)
             {
                 result.Result = errorHandler(response);
+            }
+            else if (elseHandler != null)
+            {
+                result.Result = elseHandler(response);
             }
             else
             {

@@ -26,6 +26,8 @@ namespace NRest
 
         IRequestConfiguration When(HttpStatusCode statusCode, Func<HttpWebResponse, object> handler);
 
+        IRequestConfiguration Else(Func<HttpWebResponse, object> handler);
+
         IRestResponse Execute();
 
         Task<IRestResponse> ExecuteAsync();
