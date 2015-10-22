@@ -153,20 +153,9 @@ namespace NRest
             UriBuilder builder = new UriBuilder(uri);
             if (queryParameters.Count > 0)
             {
-                string queryString = getQueryString();
-                builder.Query = queryString;
+                builder.Query = queryParameters.ToQueryString();
             }
             return builder.Uri;
-        }
-
-        private string getQueryString()
-        {
-            var pairs = from key in queryParameters.AllKeys
-                        let encodedKey = WebUtility.UrlEncode(key)
-                        from value in queryParameters.GetValues(key)
-                        let encodedValue = WebUtility.UrlEncode(value)
-                        select encodedKey + "=" + encodedValue;
-            return String.Join("&", pairs);
         }
 
         private void setHeaders(HttpWebRequest request)
