@@ -29,7 +29,10 @@ Just some highlights:
 - Or, you can provide a catch-all using the `WhenUnhandled` method.
 - Each handler can convert the result to a different value; use GetResult<T> to extract the value afterwards.
 - You can execute synchronously (`Execute`) or asynchronously (`ExecuteAsync`).
-- The response object will tell you the StatusCode, whether it is considered an error and provide the result value.
+- The response object will tell you:
+    - the HTTP status code
+    - whether it considered the response to be an error (400+) 
+    - the extracted response value.
 
 You can send updates just as easily:
 
