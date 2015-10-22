@@ -139,3 +139,16 @@ If you have an array of values, you can build up a `NameValueCollection` ahead o
     var response = client.Put("customer")
         .WithUrlEncodedBody(data)
         .Execute();
+
+## Multi-Part File Uploads
+NRest can pass files (along with form data) in the body of your request using the `WithMultiPartBody` method. To use them, put `use NRest.MultiPart;` at the top of your source. This method allows you to build a request.
+
+    var response = client.Post("attachments")
+        .WithMultiPartBody(b => 
+        {
+            b.WithFormData(fb => fb.WithParameter("name", "joe"));
+            b.WithFile("attachment1", "myfile.txt", @"C:\path\to\file.txt", "text/plain");
+        })
+        .Execute();
+        
+You can call `WithFormData` and `WithFile` as many times as needed.

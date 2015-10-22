@@ -62,6 +62,10 @@
     <Compile Include="IRestResponse.cs" />
     <Compile Include="Forms\IUrlEncodedBodyBuilder.cs" />
     <Compile Include="Json\JsonExtensions.cs" />
+    <Compile Include="MultiPart\IMultiPartBodyBuilder.cs" />
+    <Compile Include="MultiPart\MultiPartBodyBuilder.cs" />
+    <Compile Include="MultiPart\MultiPartExtensions.cs" />
+    <Compile Include="MultiPart\MultiPartFile.cs" />
     <Compile Include="NameValueCollectionExtensions.cs" />
     <Compile Include="Primitives\PrimitiveExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

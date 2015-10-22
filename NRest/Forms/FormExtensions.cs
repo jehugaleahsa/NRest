@@ -29,6 +29,7 @@ namespace NRest.Forms
                     string serialized = collection.ToQueryString();
                     StreamWriter writer = new StreamWriter(stream);
                     writer.Write(serialized);
+                    writer.Flush();
                 });
         }
 
@@ -43,6 +44,7 @@ namespace NRest.Forms
                     string serialized = collection.ToQueryString();
                     StreamWriter writer = new StreamWriter(stream);
                     writer.Write(serialized);
+                    writer.Flush();
                 });
         }
     }

@@ -18,6 +18,7 @@ namespace NRest.Json
                     string serialized = JsonConvert.SerializeObject(body);
                     StreamWriter writer = new StreamWriter(stream);
                     writer.Write(serialized);
+                    writer.Flush();
                 });
         }
 
@@ -30,6 +31,7 @@ namespace NRest.Json
                     string serialized = JsonConvert.SerializeObject(body, formatting);
                     StreamWriter writer = new StreamWriter(stream);
                     writer.Write(serialized);
+                    writer.Flush();
                 });
         }
 
@@ -42,6 +44,7 @@ namespace NRest.Json
                     string serialized = JsonConvert.SerializeObject(body, settings);
                     StreamWriter writer = new StreamWriter(stream);
                     writer.Write(serialized);
+                    writer.Flush();
                 });
         }
 
@@ -54,6 +57,7 @@ namespace NRest.Json
                     string serialized = JsonConvert.SerializeObject(body, formatting, settings);
                     StreamWriter writer = new StreamWriter(stream);
                     writer.Write(serialized);
+                    writer.Flush();
                 });
         }
 
