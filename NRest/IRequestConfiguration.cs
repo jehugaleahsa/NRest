@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -16,7 +17,7 @@ namespace NRest
 
         IRequestConfiguration WithQueryParameter(string name, int? value);
 
-        IRequestConfiguration WithBody(Func<byte[]> body);
+        IRequestConfiguration WithBodyBuilder(Action<Stream> body);
 
         IRequestConfiguration Success(Func<HttpWebResponse, object> handler);
 
@@ -26,7 +27,7 @@ namespace NRest
 
         IRequestConfiguration When(HttpStatusCode statusCode, Func<HttpWebResponse, object> handler);
 
-        IRequestConfiguration Else(Func<HttpWebResponse, object> handler);
+        IRequestConfiguration WhenUnhandled(Func<HttpWebResponse, object> handler);
 
         IRestResponse Execute();
 

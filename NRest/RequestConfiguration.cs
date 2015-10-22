@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -18,8 +19,8 @@ namespace NRest
         private ICredentials credentials;
         private Func<HttpWebResponse, object> successHandler;
         private Func<HttpWebResponse, object> errorHandler;
-        private Func<HttpWebResponse, object> elseHandler;
-        private Func<byte[]> bodyBuilder;
+        private Func<HttpWebResponse, object> unhandledHandler;
+        private Action<Stream> bodyBuilder;
 
         public RequestConfiguration(Uri uri, string method)
         {
@@ -61,7 +62,7 @@ namespace NRest
             return this;
         }
 
-        public IRequestConfiguration WithBody(Func<byte[]> body)
+        public IRequestConfiguration WithBodyBuilder(Action<Stream> body)
         {
             this.bodyBuilder = body;
             return this;
@@ -90,9 +91,9 @@ namespace NRest
             return When((int)statusCode, handler);
         }
 
-        public IRequestConfiguration Else(Func<HttpWebResponse, object> handler)
+        public IRequestConfiguration WhenUnhandled(Func<HttpWebResponse, object> handler)
         {
-            this.elseHandler = handler;
+            this.unhandledHandler = handler;
             return this;
         }
 
@@ -223,10 +224,9 @@ namespace NRest
 
         private void buildbody(HttpWebRequest request)
         {
-            byte[] rawBody = bodyBuilder();
             using (var stream = request.GetRequestStream())
             {
-                stream.Write(rawBody, 0, rawBody.Length);
+                bodyBuilder(stream);
             }
         }
 
@@ -244,9 +244,9 @@ namespace NRest
             {
                 result.Result = successHandler(response);
             }
-            else if (elseHandler != null)
+            else if (unhandledHandler != null)
             {
-                result.Result = elseHandler(response);
+                result.Result = unhandledHandler(response);
             }
             else
             {
@@ -270,9 +270,9 @@ namespace NRest
             {
                 result.Result = errorHandler(response);
             }
-            else if (elseHandler != null)
+            else if (unhandledHandler != null)
             {
-                result.Result = elseHandler(response);
+                result.Result = unhandledHandler(response);
             }
             else
             {

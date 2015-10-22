@@ -13,11 +13,11 @@ namespace NRest.Json
         {
             return configuration
                 .ConfigureRequest(r => r.ContentType = contentType)
-                .WithBody(() => 
+                .WithBodyBuilder(stream => 
                 {
                     string serialized = JsonConvert.SerializeObject(body);
-                    byte[] encoded = Encoding.Default.GetBytes(serialized);
-                    return encoded;
+                    StreamWriter writer = new StreamWriter(stream);
+                    writer.Write(serialized);
                 });
         }
 
@@ -25,11 +25,11 @@ namespace NRest.Json
         {
             return configuration
                 .ConfigureRequest(r => r.ContentType = contentType)
-                .WithBody(() =>
+                .WithBodyBuilder(stream =>
                 {
                     string serialized = JsonConvert.SerializeObject(body, formatting);
-                    byte[] encoded = Encoding.Default.GetBytes(serialized);
-                    return encoded;
+                    StreamWriter writer = new StreamWriter(stream);
+                    writer.Write(serialized);
                 });
         }
 
@@ -37,11 +37,11 @@ namespace NRest.Json
         {
             return configuration
                 .ConfigureRequest(r => r.ContentType = contentType)
-                .WithBody(() =>
+                .WithBodyBuilder(stream =>
                 {
                     string serialized = JsonConvert.SerializeObject(body, settings);
-                    byte[] encoded = Encoding.Default.GetBytes(serialized);
-                    return encoded;
+                    StreamWriter writer = new StreamWriter(stream);
+                    writer.Write(serialized);
                 });
         }
 
@@ -49,11 +49,11 @@ namespace NRest.Json
         {
             return configuration
                 .ConfigureRequest(r => r.ContentType = contentType)
-                .WithBody(() =>
+                .WithBodyBuilder(stream =>
                 {
                     string serialized = JsonConvert.SerializeObject(body, formatting, settings);
-                    byte[] encoded = Encoding.Default.GetBytes(serialized);
-                    return encoded;
+                    StreamWriter writer = new StreamWriter(stream);
+                    writer.Write(serialized);
                 });
         }
 
