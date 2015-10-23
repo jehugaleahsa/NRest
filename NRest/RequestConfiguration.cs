@@ -16,6 +16,7 @@ namespace NRest
         private readonly NameValueCollection headers;
         private readonly NameValueCollection queryParameters;
         private readonly List<Action<HttpWebRequest>> configurators;
+        private bool? useDefaultCredentials;
         private ICredentials credentials;
         private Func<HttpWebResponse, object> successHandler;
         private Func<HttpWebResponse, object> errorHandler;
@@ -35,6 +36,12 @@ namespace NRest
         public IRequestConfiguration WithCredentials(ICredentials credentials)
         {
             this.credentials = credentials;
+            return this;
+        }
+
+        public IRequestConfiguration UsingDefaultCredentials(bool useDefault)
+        {
+            this.useDefaultCredentials = useDefault;
             return this;
         }
 
@@ -68,13 +75,13 @@ namespace NRest
             return this;
         }
 
-        public IRequestConfiguration Success(Func<HttpWebResponse, object> handler)
+        public IRequestConfiguration WhenSuccess(Func<HttpWebResponse, object> handler)
         {
             this.successHandler = handler;
             return this;
         }
 
-        public IRequestConfiguration Error(Func<HttpWebResponse, object> handler)
+        public IRequestConfiguration WhenError(Func<HttpWebResponse, object> handler)
         {
             this.errorHandler = handler;
             return this;
@@ -133,6 +140,10 @@ namespace NRest
             HttpWebRequest request = HttpWebRequest.CreateHttp(fullUri);
             request.Method = method;
             setHeaders(request);
+            if (useDefaultCredentials != null)
+            {
+                request.UseDefaultCredentials = useDefaultCredentials.Value;
+            }
             if (credentials != null)
             {
                 request.Credentials = credentials;
@@ -237,10 +248,6 @@ namespace NRest
             {
                 result.Result = unhandledHandler(response);
             }
-            else
-            {
-                throw new RestException(request, "No success handler defined for the request.");
-            }
             return result;
         }
 
@@ -262,10 +269,6 @@ namespace NRest
             else if (unhandledHandler != null)
             {
                 result.Result = unhandledHandler(response);
-            }
-            else
-            {
-                throw new RestException(request, "No error handler defined for the request.", exception);
             }
             return result;
         }

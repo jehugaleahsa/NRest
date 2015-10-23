@@ -9,6 +9,8 @@ namespace NRest
     {
         IRequestConfiguration WithCredentials(ICredentials credentials);
 
+        IRequestConfiguration UsingDefaultCredentials(bool useDefault);
+
         IRequestConfiguration ConfigureRequest(Action<HttpWebRequest> configurator);
 
         IRequestConfiguration WithHeader(string name, string value);
@@ -19,9 +21,9 @@ namespace NRest
 
         IRequestConfiguration WithBodyBuilder(Action<Stream> body);
 
-        IRequestConfiguration Success(Func<HttpWebResponse, object> handler);
+        IRequestConfiguration WhenSuccess(Func<HttpWebResponse, object> handler);
 
-        IRequestConfiguration Error(Func<HttpWebResponse, object> handler);
+        IRequestConfiguration WhenError(Func<HttpWebResponse, object> handler);
 
         IRequestConfiguration When(int statusCode, Func<HttpWebResponse, object> handler);
 
