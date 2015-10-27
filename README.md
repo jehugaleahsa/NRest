@@ -5,7 +5,7 @@ Make REST API calls using a fluent syntax.
 Download using NuGet: [NRest](http://nuget.org/packages/nrest)
 
 ## Overview
-REST is easy, so interacting with a REST API should be easy too! The aim of NRest is provide a simple library that encapsulates of a lot of the heavy-lifting involved with building REST requests. REST is a pretty flexible and open standard, so a good REST client shouldn't prevent you from tweaking the request to handle those special cases, either.
+The aim of NRest is provide a simple library that encapsulates of a lot of the heavy-lifting involved with building REST requests. REST is a pretty flexible and open standard, so a good REST client shouldn't prevent you from tweaking the request to handle those special cases, either. For that reason, NRest was designed to make everyday calls easy without hiding the underlying HTTP request. 
 
 Here's an example that builds up a request and processes the results, using JSON:
 
@@ -69,6 +69,8 @@ One of the big issues with most .NET REST clients is that they try to hide away 
         .ConfigureRequest(r => r.UseDefaultCredentials = true)
         .Execute();
         
+If you don't want to repeat the same configuration for multiple requests, you can use the `RestClient.Configure` method to pre-configure each request you make with the client.
+        
 ## Headers
 If your REST API requires special headers, you can add them to the request using the `WithHeader` method.
 
@@ -94,6 +96,8 @@ You can add as many query string pairs as you need. If you have an array of valu
         configuration = configuration.WithQueryParameter("name", value);
     }
     var response = configuration.Execute();
+    
+**NOTE** NRest doesn't automatically convert query strings to URL-encoded data when the request method changes. Be sure you explicitly set URL-encoded data using the `WithUrlEncodedBody` extension method (see below). 
         
 ## JSON
 NRest depends on [Json.NET](http://www.newtonsoft.com/json) to handle JSON serialization/deserialization. All of the JSON-related functionality is implemented in terms of extension methods. To use them, put `using NRest.Json;` at the top of your source.
@@ -113,7 +117,7 @@ You can pass JSON objects in the body of your request using the `WithJsonBody` m
             .Execute();
             
 ## Url Encoded Data (Forms)
-NRest can also interpret URL encoded data, like that sent when submitting a form in HTML. All of the URL encoded data functionality is implemented in terms of extensions methods. To use them, put `use NRest.Forms;` at the top of your source.
+NRest can also interpret URL encoded data, like that sent when submitting a form in HTML. All of the URL encoded data functionality is implemented in terms of extensions methods. To use them, put `using NRest.Forms;` at the top of your source.
 
 To parse form data, you can use the `FromForm` methods. The key/value pairs will be stored in a `NameValueCollection`, which can be retrieved from the response's `Result` property. You can either do a cast or call `GetResult<NameValueCollection>` (which also just does a cast).
 
@@ -141,7 +145,7 @@ If you have an array of values, you can build up a `NameValueCollection` ahead o
         .Execute();
 
 ## Multi-Part File Uploads
-NRest can pass files (along with form data) in the body of your request using the `WithMultiPartBody` method. To use it, put `use NRest.MultiPart;` at the top of your source. This method allows you to build a request.
+NRest can pass files (along with form data) in the body of your request using the `WithMultiPartBody` method. To use it, put `using NRest.MultiPart;` at the top of your source. This method allows you to build a request.
 
     var response = client.Post("attachments")
         .WithMultiPartBody(b => 
@@ -152,6 +156,15 @@ NRest can pass files (along with form data) in the body of your request using th
         .Execute();
         
 You can call `WithFormData` and `WithFile` as many times as needed.
+
+## Authentication
+NRest supports Basic, NTLM and OAuth2 authentication. To use them, put `using NRest.Authentication;` at the top of your source.
+
+Basic authentication is the least secure, but also the most simple. `UseBasicAuthentication` will encode and store the user name/password in a header.
+
+NTLM authentication is usually used to connect to a server using Windows authentication. You can call `UseNtlmAuthentication` with or without a user name/password. If you don't provide a user name/password, it uses the default credentials, which usually belong to the user running the process.
+
+You can also pass your access token when using OAuth2, by calling the various `UseOAuth2*` methods, depending on how you want to pass your access token (header, query string, URL-encoded data, etc.). 
 
 ## License
 This is free and unencumbered software released into the public domain.
