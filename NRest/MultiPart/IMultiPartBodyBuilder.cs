@@ -15,6 +15,6 @@ namespace NRest.MultiPart
 
         IMultiPartBodyBuilder WithFile(string name, string path, Stream fileStream, string contentType = null);
 
-        IMultiPartBodyBuilder WithFile(string name, string path, string filePath, string contentType = null);
+        IMultiPartBodyBuilder WithFile(string name, string path, string contentType = null);
     }
 }

@@ -6,9 +6,13 @@ namespace NRest.Primitives
 {
     public static class PrimitiveExtensions
     {
-        public static T FromString<T>(this HttpWebResponse response)
+        public static T FromString<T>(this IWebResponse response)
         {
-            string asString = getStringResponse(response);
+            if (response == null)
+            {
+                throw new ArgumentNullException("response");
+            }
+            string asString = getStringResponse(response.Response);
             return (T)Convert.ChangeType(asString, typeof(T));
         }
 

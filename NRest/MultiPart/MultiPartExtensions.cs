@@ -11,6 +11,14 @@ namespace NRest.MultiPart
 
         public static IRequestConfiguration WithMultiPartBody(this IRequestConfiguration configuration, Action<IMultiPartBodyBuilder> multiPartBuilder)
         {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+            if (multiPartBuilder == null)
+            {
+                throw new ArgumentNullException("multiPartBuilder");
+            }
             return configuration
                 .ConfigureRequest(r => r.ContentType = "multipart/form-data; boundary=" + boundary)
                 .WithBodyBuilder(stream =>
@@ -54,7 +62,7 @@ namespace NRest.MultiPart
             writer.Write(file.Name);
             writer.Write("\"");
             writer.Write("; filename=\"");
-            writer.Write(file.Path);
+            writer.Write(file.FileName);
             writer.Write("\"");
             writer.Write(newLine);
             writer.Write("Content-Type: ");

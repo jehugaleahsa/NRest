@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
@@ -7,9 +8,11 @@ namespace NRest
     public class RestClient
     {
         private readonly string baseUri;
+        private readonly List<Action<IRequestConfiguration>> configurators;
 
         public RestClient()
         {
+            this.configurators = new List<Action<IRequestConfiguration>>();
         }
 
         public RestClient(string baseUri)
@@ -17,58 +20,69 @@ namespace NRest
             this.baseUri = baseUri;
         }
 
+        public void Configure(Action<IRequestConfiguration> configurator)
+        {
+            if (configurator == null)
+            {
+                throw new ArgumentNullException("configurator");
+            }
+            this.configurators.Add(configurator);
+        }
+
         public IRequestConfiguration Get(string uriString, object uriParameters = null)
         {
-            Uri uri = getUri(uriString, uriParameters);
-            return new RequestConfiguration(uri, "GET");
+            return getConfiguration("GET", uriString, uriParameters);
         }
 
         public IRequestConfiguration Post(string uriString, object uriParameters = null)
         {
-            Uri uri = getUri(uriString, uriParameters);
-            return new RequestConfiguration(uri, "POST");
+            return getConfiguration("POST", uriString, uriParameters);
         }
 
         public IRequestConfiguration Put(string uriString, object uriParameters = null)
         {
-            Uri uri = getUri(uriString, uriParameters);
-            return new RequestConfiguration(uri, "PUT");
+            return getConfiguration("PUT", uriString, uriParameters);
         }
 
         public IRequestConfiguration Delete(string uriString, object uriParameters = null)
         {
-            Uri uri = getUri(uriString, uriParameters);
-            return new RequestConfiguration(uri, "DELETE");
+            return getConfiguration("DELETE", uriString, uriParameters);
         }
 
         public IRequestConfiguration Patch(string uriString, object uriParameters = null)
         {
-            Uri uri = getUri(uriString, uriParameters);
-            return new RequestConfiguration(uri, "PATCH");
+            return getConfiguration("PATCH", uriString, uriParameters);
         }
 
         public IRequestConfiguration Head(string uriString, object uriParameters = null)
         {
-            Uri uri = getUri(uriString, uriParameters);
-            return new RequestConfiguration(uri, "HEAD");
+            return getConfiguration("HEAD", uriString, uriParameters);
         }
 
         public IRequestConfiguration Options(string uriString, object uriParameters = null)
         {
-            Uri uri = getUri(uriString, uriParameters);
-            return new RequestConfiguration(uri, "OPTIONS");
+            return getConfiguration("OPTIONS", uriString, uriParameters);
         }
 
         public IRequestConfiguration Trace(string uriString, object uriParameters = null)
         {
-            Uri uri = getUri(uriString, uriParameters);
-            return new RequestConfiguration(uri, "TRACE");
+            return getConfiguration("TRACE", uriString, uriParameters);
         }
 
         public IRequestConfiguration Connect(string uriString, object uriParameters = null)
         {
+            return getConfiguration("CONNECT", uriString, uriParameters);
+        }
+
+        private IRequestConfiguration getConfiguration(string method, string uriString, object uriParameters)
+        {
             Uri uri = getUri(uriString, uriParameters);
-            return new RequestConfiguration(uri, "CONNECT");
+            RequestConfiguration configuration = new RequestConfiguration(uri, method);
+            foreach (var configurator in configurators)
+            {
+                configurator(configuration);
+            }
+            return configuration;
         }
 
         private Uri getUri(string uriPart, object uriParameters)

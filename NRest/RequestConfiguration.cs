@@ -12,22 +12,22 @@ namespace NRest
     {
         private readonly Uri uri;
         private readonly string method;
-        private readonly Dictionary<int, Func<HttpWebResponse, object>> codeHandlers;
+        private readonly Dictionary<int, Func<IWebResponse, object>> codeHandlers;
         private readonly NameValueCollection headers;
         private readonly NameValueCollection queryParameters;
         private readonly List<Action<HttpWebRequest>> configurators;
         private bool? useDefaultCredentials;
         private ICredentials credentials;
-        private Func<HttpWebResponse, object> successHandler;
-        private Func<HttpWebResponse, object> errorHandler;
-        private Func<HttpWebResponse, object> unhandledHandler;
+        private Func<IWebResponse, object> successHandler;
+        private Func<IWebResponse, object> errorHandler;
+        private Func<IWebResponse, object> unhandledHandler;
         private Action<Stream> bodyBuilder;
 
         public RequestConfiguration(Uri uri, string method)
         {
             this.uri = uri;
             this.method = method;
-            this.codeHandlers = new Dictionary<int, Func<HttpWebResponse, object>>();
+            this.codeHandlers = new Dictionary<int, Func<IWebResponse, object>>();
             this.headers = new NameValueCollection();
             this.queryParameters = new NameValueCollection();
             this.configurators = new List<Action<HttpWebRequest>>();
@@ -47,6 +47,10 @@ namespace NRest
 
         public IRequestConfiguration ConfigureRequest(Action<HttpWebRequest> configurator)
         {
+            if (configurator == null)
+            {
+                throw new ArgumentNullException("configurator");
+            }
             this.configurators.Add(configurator);
             return this;
         }
@@ -69,36 +73,47 @@ namespace NRest
             return this;
         }
 
-        public IRequestConfiguration WithBodyBuilder(Action<Stream> body)
+        public IRequestConfiguration WithBodyBuilder(Action<Stream> bodyBuilder)
         {
-            this.bodyBuilder = body;
+            if (bodyBuilder == null)
+            {
+                throw new ArgumentNullException("bodyBuilder");
+            }
+            this.bodyBuilder = bodyBuilder;
             return this;
         }
 
-        public IRequestConfiguration WhenSuccess(Func<HttpWebResponse, object> handler)
+        public IRequestConfiguration WhenSuccess(Func<IWebResponse, object> handler)
         {
             this.successHandler = handler;
             return this;
         }
 
-        public IRequestConfiguration WhenError(Func<HttpWebResponse, object> handler)
+        public IRequestConfiguration WhenError(Func<IWebResponse, object> handler)
         {
             this.errorHandler = handler;
             return this;
         }
 
-        public IRequestConfiguration When(int statusCode, Func<HttpWebResponse, object> handler)
+        public IRequestConfiguration When(int statusCode, Func<IWebResponse, object> handler)
         {
-            this.codeHandlers[statusCode] = handler;
+            if (handler == null)
+            {
+                this.codeHandlers.Remove(statusCode);
+            }
+            else
+            {
+                this.codeHandlers[statusCode] = handler;
+            }
             return this;
         }
 
-        public IRequestConfiguration When(HttpStatusCode statusCode, Func<HttpWebResponse, object> handler)
+        public IRequestConfiguration When(HttpStatusCode statusCode, Func<IWebResponse, object> handler)
         {
             return When((int)statusCode, handler);
         }
 
-        public IRequestConfiguration WhenUnhandled(Func<HttpWebResponse, object> handler)
+        public IRequestConfiguration WhenUnhandled(Func<IWebResponse, object> handler)
         {
             this.unhandledHandler = handler;
             return this;
@@ -237,16 +252,16 @@ namespace NRest
             result.HasError = false;
             if (codeHandlers.ContainsKey((int)response.StatusCode))
             {
-                Func<HttpWebResponse, object> handler = codeHandlers[(int)response.StatusCode];
-                result.Result = handler(response);
+                Func<IWebResponse, object> handler = codeHandlers[(int)response.StatusCode];
+                result.Result = handler(new WebResponse() { Request = request, Response = response });
             }
             else if (successHandler != null)
             {
-                result.Result = successHandler(response);
+                result.Result = successHandler(new WebResponse() { Request = request, Response = response });
             }
             else if (unhandledHandler != null)
             {
-                result.Result = unhandledHandler(response);
+                result.Result = unhandledHandler(new WebResponse() { Request = request, Response = response });
             }
             return result;
         }
@@ -259,16 +274,16 @@ namespace NRest
             result.HasError = true;
             if (codeHandlers.ContainsKey((int)response.StatusCode))
             {
-                Func<HttpWebResponse, object> handler = codeHandlers[(int)response.StatusCode];
-                result.Result = handler(response);
+                Func<IWebResponse, object> handler = codeHandlers[(int)response.StatusCode];
+                result.Result = handler(new WebResponse() { Request = request, Response = response });
             }
             else if (errorHandler != null)
             {
-                result.Result = errorHandler(response);
+                result.Result = errorHandler(new WebResponse() { Request = request, Response = response });
             }
             else if (unhandledHandler != null)
             {
-                result.Result = unhandledHandler(response);
+                result.Result = unhandledHandler(new WebResponse() { Request = request, Response = response });
             }
             return result;
         }

@@ -10,9 +10,13 @@ namespace NRest.Forms
     {
         private const string contentType = "application/x-www-form-urlencoded";
 
-        public static NameValueCollection FromForm(this HttpWebResponse response)
+        public static NameValueCollection FromForm(this IWebResponse response)
         {
-            using (var stream = response.GetResponseStream())
+            if (response == null)
+            {
+                throw new ArgumentNullException("response");
+            }
+            using (var stream = response.Response.GetResponseStream())
             using (var reader = new StreamReader(stream))
             {
                 string formData = reader.ReadToEnd();
@@ -23,6 +27,14 @@ namespace NRest.Forms
 
         public static IRequestConfiguration WithUrlEncodedBody(this IRequestConfiguration configuration, NameValueCollection collection)
         {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+            if (collection == null)
+            {
+                throw new ArgumentNullException("collection");
+            }
             return configuration.ConfigureRequest(r => r.ContentType = contentType)
                 .WithBodyBuilder(stream =>
                 {
@@ -35,6 +47,14 @@ namespace NRest.Forms
 
         public static IRequestConfiguration WithUrlEncodedBody(this IRequestConfiguration configuration, Action<IUrlEncodedBodyBuilder> formBuilder)
         {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+            if (formBuilder == null)
+            {
+                throw new ArgumentNullException("formBuilder");
+            }
             return configuration.ConfigureRequest(r => r.ContentType = contentType)
                 .WithBodyBuilder(stream =>
                 {

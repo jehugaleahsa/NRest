@@ -6,5 +6,6 @@ namespace NRest.Forms
     {
         IUrlEncodedBodyBuilder WithParameter(string name, string value);
 
-        IUrlEncodedBodyBuilder WithParameter(string name, int? value);    }
+        IUrlEncodedBodyBuilder WithParameter(string name, int? value);    
+    }
 }

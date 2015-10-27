@@ -29,24 +29,32 @@ namespace NRest.MultiPart
 
         public IMultiPartBodyBuilder WithFormData(NameValueCollection formData)
         {
+            if (formData == null)
+            {
+                throw new ArgumentNullException("formData");
+            }
             formData.Add(formData);
             return this;
         }
 
         public IMultiPartBodyBuilder WithFormData(Action<IUrlEncodedBodyBuilder> formDataBuilder)
         {
+            if (formDataBuilder == null)
+            {
+                throw new ArgumentNullException("formDataBuilder");
+            }
             UrlEncodedBodyBuilder builder = new UrlEncodedBodyBuilder();
             formDataBuilder(builder);
             formData.Add(builder.Collection);
             return this;
         }
 
-        public IMultiPartBodyBuilder WithFile(string name, string path, byte[] content, string contentType = null)
+        public IMultiPartBodyBuilder WithFile(string name, string fileName, byte[] content, string contentType = null)
         {
             MultiPartFile file = new MultiPartFile()
             {
                 Name = name,
-                Path = path,
+                FileName = fileName,
                 ContentType = contentType,
                 Writer = MultiPartFile.GetStreamWriter(new MemoryStream(content))
             };
@@ -54,12 +62,12 @@ namespace NRest.MultiPart
             return this;
         }
 
-        public IMultiPartBodyBuilder WithFile(string name, string path, Stream fileStream, string contentType = null)
+        public IMultiPartBodyBuilder WithFile(string name, string fileName, Stream fileStream, string contentType = null)
         {
             MultiPartFile file = new MultiPartFile()
             {
                 Name = name,
-                Path = path,
+                FileName = fileName,
                 ContentType = contentType,
                 Writer = MultiPartFile.GetStreamWriter(fileStream)
             };
@@ -67,14 +75,14 @@ namespace NRest.MultiPart
             return this;
         }
 
-        public IMultiPartBodyBuilder WithFile(string name, string path, string filePath, string contentType = null)
+        public IMultiPartBodyBuilder WithFile(string name, string path, string contentType = null)
         {
             MultiPartFile file = new MultiPartFile()
             {
                 Name = name,
-                Path = path,
+                FileName = Path.GetFileName(path),
                 ContentType = contentType,
-                Writer = MultiPartFile.GetPathWriter(filePath)
+                Writer = MultiPartFile.GetPathWriter(path)
             };
             fileStreams.Add(file);
             return this;

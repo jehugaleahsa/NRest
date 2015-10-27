@@ -7,7 +7,7 @@ namespace NRest.MultiPart
     {
         public string Name { get; set; }
 
-        public string Path { get; set; }
+        public string FileName { get; set; }
 
         public string ContentType { get; set; }
 
