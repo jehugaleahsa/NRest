@@ -151,14 +151,14 @@ NRest can pass files (along with form data) in the body of your request using th
         .WithMultiPartBody(b => 
         {
             b.WithFormData(fb => fb.WithParameter("name", "joe"));
-            b.WithFile("attachment1", "myfile.txt", @"C:\path\to\file.txt", "text/plain");
+            b.WithFile("attachment1", @"C:\path\to\file.txt", "text/plain");
         })
         .Execute();
         
 You can call `WithFormData` and `WithFile` as many times as needed.
 
 ## Authentication
-NRest supports Basic, NTLM and OAuth2 authentication. To use them, put `using NRest.Authentication;` at the top of your source.
+NRest provides convenience methods for Basic, NTLM and OAuth2 authentication. To use them, put `using NRest.Authentication;` at the top of your source.
 
 Basic authentication is the least secure, but also the most simple. `UseBasicAuthentication` will encode and store the user name/password in a header.
 
