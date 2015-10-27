@@ -59,6 +59,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Authentication\BasicAuthenticationExtensions.cs" />
+    <Compile Include="Authentication\NtlmAuthenticationExtensions.cs" />
+    <Compile Include="Authentication\OAuth2AuthenticationExtensions.cs" />
     <Compile Include="WebResponse.cs" />
     <Compile Include="Forms\FormExtensions.cs" />
     <Compile Include="Forms\UrlEncodedBodyBuilder.cs" />
