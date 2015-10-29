@@ -270,6 +270,10 @@ namespace NRest
         {
             RestResponse result = new RestResponse();
             HttpWebResponse response = (HttpWebResponse)exception.Response;
+            if (response == null)
+            {
+                throw new RestException(request, "An error occurred while processing the request.", exception);
+            }
             result.StatusCode = response.StatusCode;
             result.HasError = true;
             if (codeHandlers.ContainsKey((int)response.StatusCode))
