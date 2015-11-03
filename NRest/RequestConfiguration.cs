@@ -73,6 +73,16 @@ namespace NRest
             return this;
         }
 
+        public IRequestConfiguration WithQueryParameters(NameValueCollection collection)
+        {
+            if (collection == null)
+            {
+                throw new ArgumentNullException("collection");
+            }
+            this.queryParameters.Add(collection);
+            return this;
+        }
+
         public IRequestConfiguration WithBodyBuilder(Action<Stream> bodyBuilder)
         {
             if (bodyBuilder == null)
@@ -250,18 +260,24 @@ namespace NRest
             RestResponse result = new RestResponse();
             result.StatusCode = response.StatusCode;
             result.HasError = false;
+            WebResponse webResponse = new WebResponse()
+            {
+                Request = request,
+                Response = response,
+                Exception = null
+            };
             if (codeHandlers.ContainsKey((int)response.StatusCode))
             {
                 Func<IWebResponse, object> handler = codeHandlers[(int)response.StatusCode];
-                result.Result = handler(new WebResponse() { Request = request, Response = response });
+                result.Result = handler(webResponse);
             }
             else if (successHandler != null)
             {
-                result.Result = successHandler(new WebResponse() { Request = request, Response = response });
+                result.Result = successHandler(webResponse);
             }
             else if (unhandledHandler != null)
             {
-                result.Result = unhandledHandler(new WebResponse() { Request = request, Response = response });
+                result.Result = unhandledHandler(webResponse);
             }
             return result;
         }
@@ -276,18 +292,24 @@ namespace NRest
             }
             result.StatusCode = response.StatusCode;
             result.HasError = true;
+            WebResponse webResponse = new WebResponse()
+            {
+                Request = request,
+                Response = response,
+                Exception = exception
+            };
             if (codeHandlers.ContainsKey((int)response.StatusCode))
             {
                 Func<IWebResponse, object> handler = codeHandlers[(int)response.StatusCode];
-                result.Result = handler(new WebResponse() { Request = request, Response = response });
+                result.Result = handler(webResponse);
             }
             else if (errorHandler != null)
             {
-                result.Result = errorHandler(new WebResponse() { Request = request, Response = response });
+                result.Result = errorHandler(webResponse);
             }
             else if (unhandledHandler != null)
             {
-                result.Result = unhandledHandler(new WebResponse() { Request = request, Response = response });
+                result.Result = unhandledHandler(webResponse);
             }
             return result;
         }

@@ -8,5 +8,7 @@ namespace NRest
         public HttpWebRequest Request { get; set; }
 
         public HttpWebResponse Response { get; set; }
+
+        public Exception Exception { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -18,6 +19,8 @@ namespace NRest
         IRequestConfiguration WithQueryParameter(string name, string value);
 
         IRequestConfiguration WithQueryParameter(string name, int? value);
+
+        IRequestConfiguration WithQueryParameters(NameValueCollection collection);
 
         IRequestConfiguration WithBodyBuilder(Action<Stream> body);
 
