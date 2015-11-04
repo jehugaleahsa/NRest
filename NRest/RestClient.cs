@@ -11,13 +11,14 @@ namespace NRest
         private readonly List<Action<IRequestConfiguration>> configurators;
 
         public RestClient()
+            : this(null)
         {
-            this.configurators = new List<Action<IRequestConfiguration>>();
         }
 
         public RestClient(string baseUri)
         {
             this.baseUri = baseUri;
+            this.configurators = new List<Action<IRequestConfiguration>>();
         }
 
         public void Configure(Action<IRequestConfiguration> configurator)

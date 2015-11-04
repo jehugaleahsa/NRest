@@ -1,6 +1,6 @@
 # NRest
 
-Make REST API calls using a fluent syntax.
+A simple REST client for making API calls using a fluent syntax.
 
 Download using NuGet: [NRest](http://nuget.org/packages/nrest)
 
