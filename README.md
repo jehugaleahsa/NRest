@@ -5,7 +5,7 @@ A simple REST client for making API calls using a fluent syntax.
 Download using NuGet: [NRest](http://nuget.org/packages/nrest)
 
 ## Overview
-The aim of NRest is provide a simple library that encapsulates of a lot of the heavy-lifting involved with building REST requests. REST is a pretty flexible and open standard, so a good REST client shouldn't prevent you from tweaking the request to handle those special cases, either. For that reason, NRest was designed to make everyday calls easy without hiding the underlying HTTP request. 
+The aim of NRest is provide a simple library that encapsulates of a lot of the heavy-lifting involved with building REST requests. REST is a pretty flexible and open standard, so a good REST client shouldn't prevent you from tweaking the request to handle those special cases, either. For that reason, NRest was designed to make everyday calls easy without hiding the underlying HTTP request. NRest does not reference `System.Web`, so it can be deployed and run in any environment. 
 
 Here's an example that builds up a request and processes the results, using JSON:
 
