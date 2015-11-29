@@ -62,6 +62,8 @@ The `RestClient` class provides the following methods:
 - OPTIONS
 - TRACE
 
+If you need another method, you can explicitly pass the method name to the `CreateRequest` method.
+
 ## An Open Model
 One of the big issues with most .NET REST clients is that they try to hide away the underlying .NET HTTP web classes. NRest does the exact opposite and lets you directly interact with the underlying `HttpWebRequest`. When configuring the request, call `ConfigureRequest` to directly manipulate the underlying request.
 
