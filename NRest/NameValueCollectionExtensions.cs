@@ -2,10 +2,11 @@
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
+using NRest.ModelBinders;
 
 namespace NRest
 {
-    internal static class NameValueCollectionExtensions
+    internal static class NameValueCollectionExtensionsInternal
     {
         public static string ToQueryString(this NameValueCollection collection)
         {
@@ -41,6 +42,32 @@ namespace NRest
                 collection.Add(pair.Key, pair.Value);
             }
             return collection;
+        }
+    }
+
+    public static class NameValueCollectionExtensions
+    {
+        public static T Create<T>(this NameValueCollection collection)
+            where T : new()
+        {
+            if (collection == null)
+            {
+                throw new ArgumentNullException("collection");
+            }
+            T instance = new T();
+            NameValueCollectionModelBinder<T> binder = new NameValueCollectionModelBinder<T>(collection);
+            binder.Bind(instance);
+            return instance;
+        }
+
+        public static void Update<T>(this NameValueCollection collection, T instance)
+        {
+            if (collection == null)
+            {
+                throw new ArgumentNullException("collection");
+            }
+            NameValueCollectionModelBinder<T> binder = new NameValueCollectionModelBinder<T>(collection);
+            binder.Bind(instance);
         }
     }
 }

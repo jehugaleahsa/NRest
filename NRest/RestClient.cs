@@ -5,7 +5,7 @@ using System.Net;
 
 namespace NRest
 {
-    public class RestClient
+    public class RestClient : IRestClient
     {
         private readonly string baseUri;
         private readonly List<Action<IRequestConfiguration>> configurators;
@@ -73,6 +73,15 @@ namespace NRest
         public IRequestConfiguration Connect(string uriString, object uriParameters = null)
         {
             return getConfiguration("CONNECT", uriString, uriParameters);
+        }
+
+        public IRequestConfiguration CreateRequest(string method, string uriString, object uriParameters = null)
+        {
+            if (String.IsNullOrWhiteSpace(method))
+            {
+                throw new ArgumentException("The method name cannot be null or blank.", "method");
+            }
+            return getConfiguration(method, uriString, uriParameters);
         }
 
         private IRequestConfiguration getConfiguration(string method, string uriString, object uriParameters)

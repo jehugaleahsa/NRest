@@ -54,6 +54,12 @@
     <Compile Include="Authentication\BasicAuthenticationExtensions.cs" />
     <Compile Include="Authentication\NtlmAuthenticationExtensions.cs" />
     <Compile Include="Authentication\OAuth2AuthenticationExtensions.cs" />
+    <Compile Include="IRestClient.cs" />
+    <Compile Include="ModelBinders\IModelBinder.cs" />
+    <Compile Include="ModelBinders\IValueProvider.cs" />
+    <Compile Include="ModelBinders\NameValueCollectionModelBinder.cs" />
+    <Compile Include="ModelBinders\NameValueCollectionValueProvider.cs" />
+    <Compile Include="ModelBinders\ValueProviderResult.cs" />
     <Compile Include="WebResponse.cs" />
     <Compile Include="Forms\FormExtensions.cs" />
     <Compile Include="Forms\UrlEncodedBodyBuilder.cs" />

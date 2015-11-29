@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using FakeServers;
 using FakeServers.Extractors;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

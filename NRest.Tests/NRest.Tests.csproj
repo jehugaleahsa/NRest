@@ -64,6 +64,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="NameValueCollectionExtentionsTester.cs" />
     <Compile Include="RestClientTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
