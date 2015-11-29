@@ -42,6 +42,10 @@
     <AssemblyOriginatorKeyFile>NRest.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HttpMultipartParser, Version=1.1.5.0, Culture=neutral, PublicKeyToken=6d293681fa6c7a03, processorArchitecture=MSIL">
+      <HintPath>..\packages\HttpMultipartParser.2.0.1\lib\net40\HttpMultipartParser.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.5.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -55,11 +59,17 @@
     <Compile Include="Authentication\NtlmAuthenticationExtensions.cs" />
     <Compile Include="Authentication\OAuth2AuthenticationExtensions.cs" />
     <Compile Include="IRestClient.cs" />
+    <Compile Include="ModelBinders\CompoundModelBinder.cs" />
     <Compile Include="ModelBinders\IModelBinder.cs" />
     <Compile Include="ModelBinders\IValueProvider.cs" />
+    <Compile Include="ModelBinders\JsonModelBinder.cs" />
+    <Compile Include="ModelBinders\ModelBinder.cs" />
+    <Compile Include="ModelBinders\MultiPartModelBinder.cs" />
     <Compile Include="ModelBinders\NameValueCollectionModelBinder.cs" />
     <Compile Include="ModelBinders\NameValueCollectionValueProvider.cs" />
     <Compile Include="ModelBinders\ValueProviderResult.cs" />
+    <Compile Include="MultiPart\MultiPartFileLookup.cs" />
+    <Compile Include="MultiPart\MultiPartResponse.cs" />
     <Compile Include="WebResponse.cs" />
     <Compile Include="Forms\FormExtensions.cs" />
     <Compile Include="Forms\UrlEncodedBodyBuilder.cs" />

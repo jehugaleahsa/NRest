@@ -8,7 +8,7 @@ namespace NRest.Json
 {
     public static class JsonExtensions
     {
-        private const string contentType = "application/json";
+        public const string ContentType = "application/json";
 
         public static IRequestConfiguration WithJsonBody(this IRequestConfiguration configuration, object body)
         {
@@ -17,7 +17,7 @@ namespace NRest.Json
                 throw new ArgumentNullException("configuration");
             }
             return configuration
-                .ConfigureRequest(r => r.ContentType = contentType)
+                .ConfigureRequest(r => r.ContentType = ContentType)
                 .WithBodyBuilder(stream => 
                 {
                     string serialized = JsonConvert.SerializeObject(body);
@@ -34,7 +34,7 @@ namespace NRest.Json
                 throw new ArgumentNullException("configuration");
             }
             return configuration
-                .ConfigureRequest(r => r.ContentType = contentType)
+                .ConfigureRequest(r => r.ContentType = ContentType)
                 .WithBodyBuilder(stream =>
                 {
                     string serialized = JsonConvert.SerializeObject(body, formatting);
@@ -51,7 +51,7 @@ namespace NRest.Json
                 throw new ArgumentNullException("configuration");
             }
             return configuration
-                .ConfigureRequest(r => r.ContentType = contentType)
+                .ConfigureRequest(r => r.ContentType = ContentType)
                 .WithBodyBuilder(stream =>
                 {
                     string serialized = JsonConvert.SerializeObject(body, settings);
@@ -68,7 +68,7 @@ namespace NRest.Json
                 throw new ArgumentNullException("configuration");
             }
             return configuration
-                .ConfigureRequest(r => r.ContentType = contentType)
+                .ConfigureRequest(r => r.ContentType = ContentType)
                 .WithBodyBuilder(stream =>
                 {
                     string serialized = JsonConvert.SerializeObject(body, formatting, settings);

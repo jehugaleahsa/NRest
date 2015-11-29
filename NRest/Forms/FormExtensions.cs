@@ -6,7 +6,7 @@ namespace NRest.Forms
 {
     public static class FormExtensions
     {
-        private const string contentType = "application/x-www-form-urlencoded";
+        public const string ContentType = "application/x-www-form-urlencoded";
 
         public static NameValueCollection FromForm(this IWebResponse response)
         {
@@ -33,7 +33,7 @@ namespace NRest.Forms
             {
                 throw new ArgumentNullException("collection");
             }
-            return configuration.ConfigureRequest(r => r.ContentType = contentType)
+            return configuration.ConfigureRequest(r => r.ContentType = ContentType)
                 .WithBodyBuilder(stream =>
                 {
                     string serialized = collection.ToQueryString();
@@ -53,7 +53,7 @@ namespace NRest.Forms
             {
                 throw new ArgumentNullException("formBuilder");
             }
-            return configuration.ConfigureRequest(r => r.ContentType = contentType)
+            return configuration.ConfigureRequest(r => r.ContentType = ContentType)
                 .WithBodyBuilder(stream =>
                 {
                     UrlEncodedBodyBuilder builder = new UrlEncodedBodyBuilder();

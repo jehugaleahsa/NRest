@@ -3,7 +3,7 @@ using System.IO;
 
 namespace NRest.MultiPart
 {
-    internal class MultiPartFile
+    public class MultiPartFile
     {
         public string Name { get; set; }
 
@@ -11,9 +11,11 @@ namespace NRest.MultiPart
 
         public string ContentType { get; set; }
 
-        public Action<Stream> Writer { get; set; }
+        public byte[] Contents { get; set; }
 
-        public static Action<Stream> GetPathWriter(string path)
+        internal Action<Stream> Writer { get; set; }
+
+        internal static Action<Stream> GetPathWriter(string path)
         {
             return stream =>
             {
@@ -24,7 +26,7 @@ namespace NRest.MultiPart
             };
         }
 
-        public static Action<Stream> GetStreamWriter(Stream sourceStream)
+        internal static Action<Stream> GetStreamWriter(Stream sourceStream)
         {
             return stream =>
             {
