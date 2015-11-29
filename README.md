@@ -62,6 +62,8 @@ The `RestClient` class provides the following methods:
 - OPTIONS
 - TRACE
 
+If you need another method, you can explicitly pass the method name to the `CreateRequest` method.
+
 ## An Open Model
 One of the big issues with most .NET REST clients is that they try to hide away the underlying .NET HTTP web classes. NRest does the exact opposite and lets you directly interact with the underlying `HttpWebRequest`. When configuring the request, call `ConfigureRequest` to directly manipulate the underlying request.
 
@@ -125,7 +127,7 @@ To parse form data, you can use the `FromForm` methods. The key/value pairs will
         .WhenSuccess(r => r.FromForm())
         .Execute();
         
-Eventually, I may provide an additional helper to convert from a `NameValueCollection` to an object.
+If you want to convert a `NameValueCollection` to an object, there are two extension methods, `Create<T>` and `Update<T>`. These will map the values in the `NameValueCollection` to an object. This requires the names in the collection to match the property names. If you need more control, you can implement your own `IModelBinder<T>` using the `NameValueCollectionValueProvider` class, both found in the `ModelBinding` namespace.
 
 You can pass your URL encoded data in the body of your request using the `WithUrlEncodedBody` method. This method either takes a `NameValueCollection` or allows you to build one on the fly.
 
