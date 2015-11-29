@@ -159,6 +159,8 @@ NRest can pass files (along with form data) in the body of your request using th
         
 You can call `WithFormData` and `WithFile` as many times as needed.
 
+If the API returns a multi-part response, you can extract the form data and files using the `FromMultiPart` method. This returns a `MultiPartResponse` object containing a `NameValueCollection` for the form fields (`FormData`) and a `MultiPartFileLookup` for grabbing the file contents (`Files`). Note that you shouldn't use this method if your files are too large to load into memory.
+
 ## Authentication
 NRest provides convenience methods for Basic, NTLM and OAuth2 authentication. To use them, put `using NRest.Authentication;` at the top of your source.
 
