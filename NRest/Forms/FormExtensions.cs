@@ -33,14 +33,9 @@ namespace NRest.Forms
             {
                 throw new ArgumentNullException("collection");
             }
-            return configuration.ConfigureRequest(r => r.ContentType = ContentType)
-                .WithBodyBuilder(stream =>
-                {
-                    string serialized = collection.ToQueryString();
-                    StreamWriter writer = new StreamWriter(stream);
-                    writer.Write(serialized);
-                    writer.Flush();
-                });
+            return configuration
+                .ConfigureRequest(r => r.ContentType = ContentType)
+                .WithBodyBuilder(new UrlEncodedBodyBuilder(collection));
         }
 
         public static IRequestConfiguration WithUrlEncodedBody(this IRequestConfiguration configuration, Action<IUrlEncodedBodyBuilder> formBuilder)
@@ -53,17 +48,9 @@ namespace NRest.Forms
             {
                 throw new ArgumentNullException("formBuilder");
             }
-            return configuration.ConfigureRequest(r => r.ContentType = ContentType)
-                .WithBodyBuilder(stream =>
-                {
-                    UrlEncodedBodyBuilder builder = new UrlEncodedBodyBuilder();
-                    formBuilder(builder);
-                    NameValueCollection collection = builder.Collection;
-                    string serialized = collection.ToQueryString();
-                    StreamWriter writer = new StreamWriter(stream);
-                    writer.Write(serialized);
-                    writer.Flush();
-                });
+            return configuration
+                .ConfigureRequest(r => r.ContentType = ContentType)
+                .WithBodyBuilder(new UrlEncodedBodyBuilder(formBuilder));
         }
     }
 }

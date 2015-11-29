@@ -13,25 +13,16 @@ namespace NRest.MultiPart
 
         public byte[] Contents { get; set; }
 
-        internal Action<Stream> Writer { get; set; }
+        internal IMultiPartFileWriter Writer { get; set; }
 
-        internal static Action<Stream> GetPathWriter(string path)
+        internal static IMultiPartFileWriter GetPathWriter(string path)
         {
-            return stream =>
-            {
-                using (Stream sourceStream = new FileStream(path, FileMode.Open, FileAccess.Read))
-                {
-                    sourceStream.CopyTo(stream);
-                }
-            };
+            return new PathSourceMultiPartFileWriter(path);
         }
 
-        internal static Action<Stream> GetStreamWriter(Stream sourceStream)
+        internal static IMultiPartFileWriter GetStreamWriter(Stream sourceStream)
         {
-            return stream =>
-            {
-                sourceStream.CopyTo(stream);
-            };
+            return new StreamSourceMultiPartFileWriter(sourceStream);
         }
     }
 }

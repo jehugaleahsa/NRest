@@ -22,7 +22,7 @@ namespace NRest
 
         IRequestConfiguration WithQueryParameters(NameValueCollection collection);
 
-        IRequestConfiguration WithBodyBuilder(Action<Stream> body);
+        IRequestConfiguration WithBodyBuilder(IRequestBodyBuilder builder);
 
         IRequestConfiguration WhenSuccess(Func<IWebResponse, object> handler);
 

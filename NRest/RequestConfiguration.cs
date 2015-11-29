@@ -20,7 +20,7 @@ namespace NRest
         private Func<IWebResponse, object> successHandler;
         private Func<IWebResponse, object> errorHandler;
         private Func<IWebResponse, object> unhandledHandler;
-        private Action<Stream> bodyBuilder;
+        private IRequestBodyBuilder bodyBuilder;
 
         public RequestConfiguration(Uri uri, string method)
         {
@@ -82,13 +82,13 @@ namespace NRest
             return this;
         }
 
-        public IRequestConfiguration WithBodyBuilder(Action<Stream> bodyBuilder)
+        public IRequestConfiguration WithBodyBuilder(IRequestBodyBuilder builder)
         {
-            if (bodyBuilder == null)
+            if (builder == null)
             {
-                throw new ArgumentNullException("bodyBuilder");
+                throw new ArgumentNullException("builder");
             }
-            this.bodyBuilder = bodyBuilder;
+            this.bodyBuilder = builder;
             return this;
         }
 
@@ -144,9 +144,27 @@ namespace NRest
             }
         }
 
+        private HttpWebRequest createRequest()
+        {
+            HttpWebRequest request = createEmptyRequest();
+            if (bodyBuilder != null)
+            {
+                buildbody(request);
+            }
+            return request;
+        }
+
+        private void buildbody(HttpWebRequest request)
+        {
+            using (var stream = request.GetRequestStream())
+            {
+                bodyBuilder.Build(stream);
+            }
+        }
+
         public async Task<IRestResponse> ExecuteAsync()
         {
-            HttpWebRequest request = createRequest();
+            HttpWebRequest request = await createRequestAsync();
             try
             {
                 HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
@@ -158,7 +176,25 @@ namespace NRest
             }
         }
 
-        private HttpWebRequest createRequest()
+        private async Task<HttpWebRequest> createRequestAsync()
+        {
+            HttpWebRequest request = createEmptyRequest();
+            if (bodyBuilder != null)
+            {
+                await buildbodyAsync(request);
+            }
+            return request;
+        }
+
+        private async Task buildbodyAsync(HttpWebRequest request)
+        {
+            using (var stream = await request.GetRequestStreamAsync())
+            {
+                await bodyBuilder.BuildAsync(stream);
+            }
+        }
+
+        private HttpWebRequest createEmptyRequest()
         {
             Uri fullUri = buildUri();
             HttpWebRequest request = HttpWebRequest.CreateHttp(fullUri);
@@ -175,10 +211,6 @@ namespace NRest
             foreach (var configurator in configurators)
             {
                 configurator(request);
-            }
-            if (bodyBuilder != null)
-            {
-                buildbody(request);
             }
             return request;
         }
@@ -244,14 +276,6 @@ namespace NRest
                 }
             }
             request.Headers.Add(headersCopy);
-        }
-
-        private void buildbody(HttpWebRequest request)
-        {
-            using (var stream = request.GetRequestStream())
-            {
-                bodyBuilder(stream);
-            }
         }
 
         private IRestResponse getSuccessResult(HttpWebRequest request, HttpWebResponse response)

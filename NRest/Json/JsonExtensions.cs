@@ -18,13 +18,7 @@ namespace NRest.Json
             }
             return configuration
                 .ConfigureRequest(r => r.ContentType = ContentType)
-                .WithBodyBuilder(stream => 
-                {
-                    string serialized = JsonConvert.SerializeObject(body);
-                    StreamWriter writer = new StreamWriter(stream);
-                    writer.Write(serialized);
-                    writer.Flush();
-                });
+                .WithBodyBuilder(new JsonBodyBuilder(body));
         }
 
         public static IRequestConfiguration WithJsonBody(this IRequestConfiguration configuration, object body, Formatting formatting)
@@ -35,13 +29,7 @@ namespace NRest.Json
             }
             return configuration
                 .ConfigureRequest(r => r.ContentType = ContentType)
-                .WithBodyBuilder(stream =>
-                {
-                    string serialized = JsonConvert.SerializeObject(body, formatting);
-                    StreamWriter writer = new StreamWriter(stream);
-                    writer.Write(serialized);
-                    writer.Flush();
-                });
+                .WithBodyBuilder(new JsonBodyBuilder(body, formatting));
         }
 
         public static IRequestConfiguration WithJsonBody(this IRequestConfiguration configuration, object body, JsonSerializerSettings settings)
@@ -52,13 +40,7 @@ namespace NRest.Json
             }
             return configuration
                 .ConfigureRequest(r => r.ContentType = ContentType)
-                .WithBodyBuilder(stream =>
-                {
-                    string serialized = JsonConvert.SerializeObject(body, settings);
-                    StreamWriter writer = new StreamWriter(stream);
-                    writer.Write(serialized);
-                    writer.Flush();
-                });
+                .WithBodyBuilder(new JsonBodyBuilder(body, settings));
         }
 
         public static IRequestConfiguration WithJsonBody(this IRequestConfiguration configuration, object body, Formatting formatting, JsonSerializerSettings settings)
@@ -69,13 +51,7 @@ namespace NRest.Json
             }
             return configuration
                 .ConfigureRequest(r => r.ContentType = ContentType)
-                .WithBodyBuilder(stream =>
-                {
-                    string serialized = JsonConvert.SerializeObject(body, formatting, settings);
-                    StreamWriter writer = new StreamWriter(stream);
-                    writer.Write(serialized);
-                    writer.Flush();
-                });
+                .WithBodyBuilder(new JsonBodyBuilder(body, formatting, settings));
         }
 
         public static TResult FromJson<TResult>(this IWebResponse response)

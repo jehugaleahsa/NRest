@@ -1,8 +1,14 @@
-﻿using System.Net;
+﻿using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
 using FakeServers;
 using FakeServers.Extractors;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using NRest.Forms;
+using NRest.Json;
+using NRest.MultiPart;
 
 namespace NRest.Tests
 {
@@ -95,6 +101,94 @@ namespace NRest.Tests
                 string[] ids = bodyExtractor.Parameters.GetValues("CustomerId");
                 string[] expectedIds = new string[] { "1", "2", "3" };
                 CollectionAssert.AreEquivalent(expectedIds, ids, "The array of values were not sent.");
+            }
+        }
+
+        [TestMethod]
+        public void ShouldPOSTWithJsonData()
+        {
+            using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))
+            {
+                var bodyExtractor = new JsonBodyExtractor<TestCustomer>();
+                server.UseBodyExtractor(bodyExtractor);
+                server.Listen();
+
+                RestClient client = new RestClient();
+                var response = client.Post("http://localhost:8080/api/customers")
+                    .WithJsonBody(new TestCustomer() { Name = "Bob Smith", Age = 31, Title = "Mr." })
+                    .Execute();
+
+                var customer = bodyExtractor.Result;
+                Assert.AreEqual("Bob Smith", customer.Name, "The name was not sent.");
+                Assert.AreEqual(31, customer.Age, "The age was not sent.");
+                Assert.AreEqual("Mr.", customer.Title, "The title was not sent.");
+            }
+        }
+
+        public class TestCustomer
+        {
+            public string Name { get; set; }
+
+            public int? Age { get; set; }
+
+            public string Title { get; set; }
+        }
+
+        [TestMethod]
+        public void ShouldPOSTMultiPartData()
+        {
+            using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))
+            {
+                MultiPartBodyExtractor extractor = new MultiPartBodyExtractor();
+                server.UseBodyExtractor(extractor);
+
+                server.Listen();
+
+                RestClient client = new RestClient("http://localhost:8080");
+                client.Post("api/customers")
+                    .WithMultiPartBody(b => 
+                    {
+                        b.WithFormData(ub => ub.WithParameter("name", "John Smith"));
+                        b.WithFile("file1", "path", Encoding.Default.GetBytes("Hello, world"), "text/plain");
+                    })
+                    .Execute();
+
+                Assert.AreEqual("John Smith", extractor.Parameters["name"], "The form data was not transfered.");
+                
+                var file = extractor.Files["file1"].SingleOrDefault();
+                Assert.AreEqual("file1", file.Name);
+                Assert.AreEqual("path", file.FileName);
+                Assert.AreEqual("text/plain", file.ContentType);
+                Assert.AreEqual("Hello, world", Encoding.Default.GetString(file.Contents));
+            }
+        }
+
+        [TestMethod]
+        public async Task ShouldPOSTMultiPartDataAsync()
+        {
+            using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))
+            {
+                MultiPartBodyExtractor extractor = new MultiPartBodyExtractor();
+                server.UseBodyExtractor(extractor);
+
+                server.Listen();
+
+                RestClient client = new RestClient("http://localhost:8080");
+                await client.Post("api/customers")
+                    .WithMultiPartBody(b =>
+                    {
+                        b.WithFormData(ub => ub.WithParameter("name", "John Smith"));
+                        b.WithFile("file1", "path", Encoding.Default.GetBytes("Hello, world"), "text/plain");
+                    })
+                    .ExecuteAsync();
+
+                Assert.AreEqual("John Smith", extractor.Parameters["name"], "The form data was not transfered.");
+
+                var file = extractor.Files["file1"].SingleOrDefault();
+                Assert.AreEqual("file1", file.Name);
+                Assert.AreEqual("path", file.FileName);
+                Assert.AreEqual("text/plain", file.ContentType);
+                Assert.AreEqual("Hello, world", Encoding.Default.GetString(file.Contents));
             }
         }
     }
