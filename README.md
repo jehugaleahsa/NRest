@@ -171,7 +171,7 @@ NTLM authentication is usually used to connect to a server using Windows authent
 You can also pass your access token when using OAuth2, by calling the various `UseOAuth2*` methods, depending on how you want to pass your access token (header, query string, URL-encoded data, etc.).
 
 ## URI Templates (RFC 6570)
-The URI templates you pass to the client can be a lot more complex than simple placeholders. NRest supports level 4 URI templates based on [RFC 6570](https://tools.ietf.org/html/rfc6570). This makes it a lot easier to build complex URLs, especially those containing embedded IDs, query strings, path segments (1), fragments (#) and other URI oddities. For example, here is a very complex URI that would be a pain to build otherwise:
+The URI templates you pass to the client can be a lot more complex than simple placeholders. NRest supports level 4 URI templates based on [RFC 6570](https://tools.ietf.org/html/rfc6570). This makes it a lot easier to build complex URLs, especially those containing embedded IDs, query strings, path segments (/), fragments (#) and other URI oddities. For example, here is a very complex URI that would be a pain to build otherwise:
 
     UriTemplate template = new UriTemplate("http://localhost{+port}/api{/version}/customers{?q,pagenum,pagesize}{#section}");
     string uri = template.Expand(new
