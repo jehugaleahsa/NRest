@@ -1,6 +1,6 @@
 # NRest
 
-A simple REST client for making API calls using a fluent syntax.
+A simple HTTP and REST client for making API calls using a fluent syntax.
 
 Download using NuGet: [NRest](http://nuget.org/packages/nrest)
 
@@ -168,7 +168,23 @@ Basic authentication is the least secure, but also the most simple. `UseBasicAut
 
 NTLM authentication is usually used to connect to a server using Windows authentication. You can call `UseNtlmAuthentication` with or without a user name/password. If you don't provide a user name/password, it uses the default credentials, which usually belong to the user running the process.
 
-You can also pass your access token when using OAuth2, by calling the various `UseOAuth2*` methods, depending on how you want to pass your access token (header, query string, URL-encoded data, etc.). 
+You can also pass your access token when using OAuth2, by calling the various `UseOAuth2*` methods, depending on how you want to pass your access token (header, query string, URL-encoded data, etc.).
+
+## URI Templates (RFC 6570)
+The URI templates you pass to the client can be a lot more complex than simple placeholders. NRest supports level 4 URI templates based on [RFC 6570](https://tools.ietf.org/html/rfc6570). This makes it a lot easier to build complex URLs, especially those containing embedded IDs, query strings, path segments (#) and other URI oddities. For example, here is a very complex URI that would be a pain to build otherwise:
+
+    UriTemplate template = new UriTemplate("http://localhost{+port}/api{/version}/customers{?q,pagenum,pagesize}{#section}");
+    string uri = template.Expand(new
+    {
+        port = ":8080",
+        version = "v2",
+        q = "rest",
+        pagenum = 3,
+        pagesize = (int?)null,
+        section = "results"
+    });
+
+Internally, the `RestClient` uses the `UriTemplate` class to create URIs. This class takes a URI template and an `object` or `IDictionary` with properties/keys matching what's in the template. It replaces the placeholders with the associated values. The template above will result in `http://localhost:8080/api/v2/customers?q=rest&pagenum=3&pagesize=#results`. You can work with the `UriTemplate` class directly if desired.
 
 ## License
 This is free and unencumbered software released into the public domain.

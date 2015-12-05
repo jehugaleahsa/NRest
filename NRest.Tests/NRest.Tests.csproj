@@ -67,6 +67,7 @@
     <Compile Include="NameValueCollectionExtentionsTester.cs" />
     <Compile Include="RestClientTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UriTemplateTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NRest\NRest.csproj">

@@ -34,6 +34,44 @@ namespace NRest.Tests
         }
 
         [TestMethod]
+        public void ShouldGETWithSimpleTemplate()
+        {
+            using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))
+            {
+                var extractor = new RequestExtractor();
+                server.UseBodyExtractor(extractor);
+                server.Listen();
+
+                RestClient client = new RestClient();
+                var response = client.Get("http://localhost:8080/api/customers/{customerId}", new 
+                    {
+                        customerId = 123
+                    }).Execute();
+
+                Assert.IsTrue(extractor.Url.ToString().EndsWith("123"), "The ID was not passed.");
+            }
+        }
+
+        [TestMethod]
+        public void ShouldGETWithQueryTemplate()
+        {
+            using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))
+            {
+                var extractor = new RequestExtractor();
+                server.UseBodyExtractor(extractor);
+                server.Listen();
+
+                RestClient client = new RestClient();
+                var response = client.Get("http://localhost:8080/api/customers/{?customerid}", new
+                {
+                    customerid = 123
+                }).Execute();
+
+                Assert.AreEqual("123", extractor.QueryString["customerid"], "The ID was not passed.");
+            }
+        }
+
+        [TestMethod]
         public void ShouldGETWithCustomHeader()
         {
             using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))

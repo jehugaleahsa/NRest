@@ -10,7 +10,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <copyright>Copyright 2016</copyright>
-    <tags>REST fluent RESTful HTTP API</tags>
+    <tags>REST fluent RESTful HTTP API URI template</tags>
     <dependencies>
         <dependency id="Newtonsoft.Json" version="(5.0,)" />
     </dependencies>

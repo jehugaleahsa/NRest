@@ -75,6 +75,11 @@
     <Compile Include="MultiPart\MultiPartResponse.cs" />
     <Compile Include="MultiPart\PathSourceMultiPartFileWriter.cs" />
     <Compile Include="MultiPart\StreamSourceMultiPartFileWriter.cs" />
+    <Compile Include="UriTemplates\ConstantGenerator.cs" />
+    <Compile Include="UriTemplates\ISectionGenerator.cs" />
+    <Compile Include="UriTemplates\PlaceholderGenerator.cs" />
+    <Compile Include="UriTemplates\UriTemplate.cs" />
+    <Compile Include="UriTemplates\Variable.cs" />
     <Compile Include="WebResponse.cs" />
     <Compile Include="Forms\FormExtensions.cs" />
     <Compile Include="Forms\UrlEncodedBodyBuilder.cs" />
@@ -99,6 +104,7 @@
     <None Include="NRest.snk" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

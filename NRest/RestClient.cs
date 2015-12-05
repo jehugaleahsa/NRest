@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+using NRest.UriTemplates;
 
 namespace NRest
 {
@@ -32,47 +31,47 @@ namespace NRest
 
         public IRequestConfiguration Get(string uriString, object uriParameters = null)
         {
-            return getConfiguration("GET", uriString, uriParameters);
+            return getConfiguration("GET", uriString, true, uriParameters);
         }
 
         public IRequestConfiguration Post(string uriString, object uriParameters = null)
         {
-            return getConfiguration("POST", uriString, uriParameters);
+            return getConfiguration("POST", uriString, true, uriParameters);
         }
 
         public IRequestConfiguration Put(string uriString, object uriParameters = null)
         {
-            return getConfiguration("PUT", uriString, uriParameters);
+            return getConfiguration("PUT", uriString, true, uriParameters);
         }
 
         public IRequestConfiguration Delete(string uriString, object uriParameters = null)
         {
-            return getConfiguration("DELETE", uriString, uriParameters);
+            return getConfiguration("DELETE", uriString, true, uriParameters);
         }
 
         public IRequestConfiguration Patch(string uriString, object uriParameters = null)
         {
-            return getConfiguration("PATCH", uriString, uriParameters);
+            return getConfiguration("PATCH", uriString, true, uriParameters);
         }
 
         public IRequestConfiguration Head(string uriString, object uriParameters = null)
         {
-            return getConfiguration("HEAD", uriString, uriParameters);
+            return getConfiguration("HEAD", uriString, true, uriParameters);
         }
 
         public IRequestConfiguration Options(string uriString, object uriParameters = null)
         {
-            return getConfiguration("OPTIONS", uriString, uriParameters);
+            return getConfiguration("OPTIONS", uriString, true, uriParameters);
         }
 
         public IRequestConfiguration Trace(string uriString, object uriParameters = null)
         {
-            return getConfiguration("TRACE", uriString, uriParameters);
+            return getConfiguration("TRACE", uriString, true, uriParameters);
         }
 
         public IRequestConfiguration Connect(string uriString, object uriParameters = null)
         {
-            return getConfiguration("CONNECT", uriString, uriParameters);
+            return getConfiguration("CONNECT", uriString, true, uriParameters);
         }
 
         public IRequestConfiguration CreateRequest(string method, string uriString, object uriParameters = null)
@@ -81,12 +80,12 @@ namespace NRest
             {
                 throw new ArgumentException("The method name cannot be null or blank.", "method");
             }
-            return getConfiguration(method, uriString, uriParameters);
+            return getConfiguration(method, uriString, true, uriParameters);
         }
 
-        private IRequestConfiguration getConfiguration(string method, string uriString, object uriParameters)
+        private IRequestConfiguration getConfiguration(string method, string uriString, bool caseSensitive, object uriParameters)
         {
-            Uri uri = getUri(uriString, uriParameters);
+            Uri uri = getUri(uriString, caseSensitive, uriParameters);
             RequestConfiguration configuration = new RequestConfiguration(uri, method);
             foreach (var configurator in configurators)
             {
@@ -95,35 +94,25 @@ namespace NRest
             return configuration;
         }
 
-        private Uri getUri(string uriPart, object uriParameters)
+        private Uri getUri(string uriPart, bool caseSensitive, object uriParameters)
         {
             if (String.IsNullOrWhiteSpace(baseUri))
             {
-                return applyParameters(uriPart, uriParameters);
+                return applyParameters(uriPart, caseSensitive, uriParameters);
             }
             if (String.IsNullOrWhiteSpace(uriPart))
             {
-                return applyParameters(baseUri, uriParameters);
+                return applyParameters(baseUri, caseSensitive, uriParameters);
             }
             // This code will not work if someone passes in a scheme as base URL
             string uri = baseUri.TrimEnd('/') + "/" + uriPart.TrimStart('/');
-            return applyParameters(uri, uriParameters);
+            return applyParameters(uri, caseSensitive, uriParameters);
         }
 
-        private Uri applyParameters(string uri, object uriParameters)
+        private Uri applyParameters(string uriTemplate, bool caseSensitive, object uriParameters)
         {
-            if (uriParameters == null)
-            {
-                return new Uri(uri);
-            }
-            Type parameterType = uriParameters.GetType();
-            var parameterLookup = parameterType.GetProperties().ToDictionary(p => p.Name, p => p.GetValue(uriParameters));
-            foreach (string uriParameter in parameterLookup.Keys)
-            {
-                object value = parameterLookup[uriParameter];
-                string encodedValue = value == null ? String.Empty : WebUtility.UrlEncode(value.ToString());
-                uri = uri.Replace("{" + uriParameter + "}", encodedValue);
-            }
+            UriTemplate template = new UriTemplate(uriTemplate, caseSensitive);
+            string uri = template.Expand(uriParameters);
             return new Uri(uri);
         }
     }
