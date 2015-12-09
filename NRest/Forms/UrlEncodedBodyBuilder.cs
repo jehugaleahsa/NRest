@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace NRest.Forms
@@ -38,20 +39,18 @@ namespace NRest.Forms
             return this;
         }
 
-        void IRequestBodyBuilder.Build(Stream stream)
+        void IRequestBodyBuilder.Build(Stream stream, Encoding encoding)
         {
             string serialized = getQueryString();
-            StreamWriter writer = new StreamWriter(stream);
+            StreamWriter writer = new StreamWriter(stream, encoding);
             writer.Write(serialized);
-            writer.Flush();
         }
 
-        async Task IRequestBodyBuilder.BuildAsync(Stream stream)
+        async Task IRequestBodyBuilder.BuildAsync(Stream stream, Encoding encoding)
         {
             string serialized = getQueryString();
-            StreamWriter writer = new StreamWriter(stream);
+            StreamWriter writer = new StreamWriter(stream, encoding);
             await writer.WriteAsync(serialized);
-            await writer.FlushAsync();
         }
 
         private string getQueryString()

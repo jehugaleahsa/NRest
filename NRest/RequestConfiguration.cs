@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace NRest
@@ -156,9 +156,9 @@ namespace NRest
 
         private void buildbody(HttpWebRequest request)
         {
-            using (var stream = request.GetRequestStream())
+            using (var requestStream = request.GetRequestStream())
             {
-                bodyBuilder.Build(stream);
+                bodyBuilder.Build(requestStream, getBodyEncoding());
             }
         }
 
@@ -188,9 +188,9 @@ namespace NRest
 
         private async Task buildbodyAsync(HttpWebRequest request)
         {
-            using (var stream = await request.GetRequestStreamAsync())
+            using (var requestStream = await request.GetRequestStreamAsync())
             {
-                await bodyBuilder.BuildAsync(stream);
+                await bodyBuilder.BuildAsync(requestStream, getBodyEncoding());
             }
         }
 
@@ -335,6 +335,11 @@ namespace NRest
                 result.Result = unhandledHandler(webResponse);
             }
             return result;
+        }
+
+        private Encoding getBodyEncoding()
+        {
+            return Encoding.UTF8;
         }
     }
 }

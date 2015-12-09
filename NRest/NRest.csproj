@@ -75,6 +75,7 @@
     <Compile Include="MultiPart\MultiPartResponse.cs" />
     <Compile Include="MultiPart\PathSourceMultiPartFileWriter.cs" />
     <Compile Include="MultiPart\StreamSourceMultiPartFileWriter.cs" />
+    <Compile Include="StreamWriter.cs" />
     <Compile Include="UriTemplates\ConstantGenerator.cs" />
     <Compile Include="UriTemplates\ISectionGenerator.cs" />
     <Compile Include="UriTemplates\PlaceholderGenerator.cs" />

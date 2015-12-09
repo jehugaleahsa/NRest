@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using NRest.Forms;
 using NRest.Json;
 using NRest.MultiPart;
+using NRest.Primitives;
 
 namespace NRest.Tests
 {
@@ -184,10 +185,10 @@ namespace NRest.Tests
 
                 RestClient client = new RestClient("http://localhost:8080");
                 client.Post("api/customers")
-                    .WithMultiPartBody(b => 
+                    .WithMultiPartBody(b =>
                     {
                         b.WithFormData(ub => ub.WithParameter("name", "John Smith"));
-                        b.WithFile("file1", "path", Encoding.Default.GetBytes("Hello, world"), "text/plain");
+                        b.WithFile("file1", "path", Encoding.UTF8.GetBytes("Hello, World!Ӽ!"), "text/plain");
                     })
                     .Execute();
 
@@ -197,7 +198,7 @@ namespace NRest.Tests
                 Assert.AreEqual("file1", file.Name);
                 Assert.AreEqual("path", file.FileName);
                 Assert.AreEqual("text/plain", file.ContentType);
-                Assert.AreEqual("Hello, world", Encoding.Default.GetString(file.Contents));
+                Assert.AreEqual("Hello, World!Ӽ!", Encoding.UTF8.GetString(file.Contents));
             }
         }
 
@@ -216,7 +217,7 @@ namespace NRest.Tests
                     .WithMultiPartBody(b =>
                     {
                         b.WithFormData(ub => ub.WithParameter("name", "John Smith"));
-                        b.WithFile("file1", "path", Encoding.Default.GetBytes("Hello, world"), "text/plain");
+                        b.WithFile("file1", "path", Encoding.UTF8.GetBytes("Hello, world"), "text/plain");
                     })
                     .ExecuteAsync();
 
@@ -226,7 +227,24 @@ namespace NRest.Tests
                 Assert.AreEqual("file1", file.Name);
                 Assert.AreEqual("path", file.FileName);
                 Assert.AreEqual("text/plain", file.ContentType);
-                Assert.AreEqual("Hello, world", Encoding.Default.GetString(file.Contents));
+                Assert.AreEqual("Hello, world", Encoding.UTF8.GetString(file.Contents));
+            }
+        }
+
+        [TestMethod]
+        public void ShouldGetInt32()
+        {
+            using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/numbers"))
+            {
+                server.ReturnString("4");
+                server.Listen();
+
+                RestClient client = new RestClient("http://localhost:8080");
+                var response = client.Get("numbers")
+                    .WhenSuccess(r => r.FromString<int>())
+                    .Execute();
+                Assert.IsFalse(response.HasError, "An error occurred getting the number.");
+                Assert.AreEqual(4, response.GetResult<int>());
             }
         }
     }

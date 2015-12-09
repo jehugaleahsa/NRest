@@ -37,8 +37,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FakeServers, Version=0.0.0.8, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\FakeServers.0.0.0.8\lib\net45\FakeServers.dll</HintPath>
+    <Reference Include="FakeServers, Version=0.0.0.9, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FakeServers.0.0.0.9\lib\net45\FakeServers.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="HttpMultipartParser, Version=1.1.5.0, Culture=neutral, PublicKeyToken=6d293681fa6c7a03, processorArchitecture=MSIL">

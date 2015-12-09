@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using NRest.Forms;
 
@@ -70,6 +71,7 @@ namespace NRest.MultiPart
 
         public IMultiPartBodyBuilder WithFile(string name, string fileName, Stream fileStream, string contentType = null)
         {
+
             MultiPartFile file = new MultiPartFile()
             {
                 Name = name,
@@ -94,10 +96,10 @@ namespace NRest.MultiPart
             return this;
         }
 
-        void IRequestBodyBuilder.Build(Stream stream)
+        void IRequestBodyBuilder.Build(Stream stream, Encoding encoding)
         {
             builder(this);
-            StreamWriter writer = new StreamWriter(stream);
+            StreamWriter writer = new StreamWriter(stream, encoding);
             foreach (string name in FormData.AllKeys)
             {
                 writeFormData(writer, FormData, name);
@@ -107,42 +109,63 @@ namespace NRest.MultiPart
                 writeFile(writer, file);
             }
             writeFooter(writer);
-            writer.Flush();
         }
 
         private static void writeFormData(StreamWriter writer, NameValueCollection collection, string name)
         {
-            writer.Write("--" + Boundary);
-            writer.Write(newLine);
-            writer.Write("Content-Disposition: form-data; name=\"" + name + "\"");
-            writer.Write(newLine + newLine);
-            writer.Write(collection.Get(name));
-            writer.Write(newLine);
+            string section = getFormDataSection(collection, name);
+            writer.Write(section);
+        }
+
+        private static string getFormDataSection(NameValueCollection collection, string name)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append("--" + Boundary);
+            builder.Append(newLine);
+            builder.Append("Content-Disposition: form-data; name=\"" + name + "\"");
+            builder.Append(newLine + newLine);
+            builder.Append(collection.Get(name));
+            builder.Append(newLine);
+            return builder.ToString();
         }
 
         private static void writeFile(StreamWriter writer, MultiPartFile file)
         {
-            writer.Write("--" + Boundary);
-            writer.Write(newLine);
-            writer.Write("Content-Disposition: form-data; name=\"" + file.Name + "\"; filename=\"" + file.FileName + "\"");
-            writer.Write(newLine);
-            writer.Write("Content-Type: " + (file.ContentType ?? "application/octet-stream"));
-            writer.Write(newLine + newLine);
-            writer.Flush();  // flush before directly accessing stream
+            string header = getFileSectionHeader(file);
+            writer.Write(header);
+
             file.Writer.Write(writer.BaseStream);
             writer.Write(newLine);
         }
 
-        private static void writeFooter(StreamWriter writer)
+        private static string getFileSectionHeader(MultiPartFile file)
         {
-            writer.Write("--" + Boundary + "--");
-            writer.Write(newLine);
+            StringBuilder builder = new StringBuilder();
+            builder.Append("--" + Boundary);
+            builder.Append(newLine);
+            builder.Append("Content-Disposition: form-data; name=\"" + file.Name + "\"; filename=\"" + file.FileName + "\"");
+            builder.Append(newLine);
+            builder.Append("Content-Type: " + (file.ContentType ?? "application/octet-stream"));
+            builder.Append(newLine + newLine);
+            return builder.ToString();
         }
 
-        async Task IRequestBodyBuilder.BuildAsync(Stream stream)
+        private static void writeFooter(StreamWriter writer)
+        {
+            string footer = getFooter();
+            writer.Write(footer);
+        }
+
+        private static string getFooter()
+        {
+            const string footer = "--" + Boundary + "--" + newLine;
+            return footer;
+        }
+
+        async Task IRequestBodyBuilder.BuildAsync(Stream stream, Encoding encoding)
         {
             builder(this);
-            StreamWriter writer = new StreamWriter(stream);
+            StreamWriter writer = new StreamWriter(stream, encoding);
             foreach (string name in FormData.AllKeys)
             {
                 await writeFormDataAsync(writer, FormData, name);
@@ -152,36 +175,27 @@ namespace NRest.MultiPart
                 await writeFileAsync(writer, file);
             }
             await writeFooterAsync(writer);
-            await writer.FlushAsync();
         }
 
         private static async Task writeFormDataAsync(StreamWriter writer, NameValueCollection collection, string name)
         {
-            await writer.WriteAsync("--" + Boundary);
-            await writer.WriteAsync(newLine);
-            await writer.WriteAsync("Content-Disposition: form-data; name=\"" + name + "\"");
-            await writer.WriteAsync(newLine + newLine);
-            await writer.WriteAsync(collection.Get(name));
-            await writer.WriteAsync(newLine);
+            string section = getFormDataSection(collection, name);
+            await writer.WriteAsync(section);
         }
 
         private static async Task writeFileAsync(StreamWriter writer, MultiPartFile file)
         {
-            await writer.WriteAsync("--" + Boundary);
-            await writer.WriteAsync(newLine);
-            await writer.WriteAsync("Content-Disposition: form-data; name=\"" + file.Name + "\"; filename=\"" + file.FileName + "\"");
-            await writer.WriteAsync(newLine);
-            await writer.WriteAsync("Content-Type: " + (file.ContentType ?? "application/octet-stream"));
-            await writer.WriteAsync(newLine + newLine);
-            await writer.FlushAsync();  // flush before directly accessing stream
+            string header = getFileSectionHeader(file);
+            await writer.WriteAsync(header);
+
             await file.Writer.WriteAsync(writer.BaseStream);
             await writer.WriteAsync(newLine);
         }
 
         private static async Task writeFooterAsync(StreamWriter writer)
         {
-            await writer.WriteAsync("--" + Boundary + "--");
-            await writer.WriteAsync(newLine);
+            string footer = getFooter();
+            await writer.WriteAsync(footer);
         }
     }
 }

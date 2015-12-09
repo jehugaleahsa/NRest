@@ -1,5 +1,5 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -33,20 +33,18 @@ namespace NRest.Json
             this.settings = settings;
         }
 
-        public void Build(Stream stream)
+        public void Build(Stream stream, Encoding encoding)
         {
             string serialized = JsonConvert.SerializeObject(body, formatting, settings);
-            StreamWriter writer = new StreamWriter(stream);
+            StreamWriter writer = new StreamWriter(stream, encoding);
             writer.Write(serialized);
-            writer.Flush();
         }
 
-        public async Task BuildAsync(Stream stream)
+        public async Task BuildAsync(Stream stream, Encoding encoding)
         {
             string serialized = JsonConvert.SerializeObject(body, formatting, settings);
-            StreamWriter writer = new StreamWriter(stream);
+            StreamWriter writer = new StreamWriter(stream, encoding);
             await writer.WriteAsync(serialized);
-            await writer.FlushAsync();
         }
     }
 }
