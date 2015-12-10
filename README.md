@@ -23,7 +23,7 @@ Here's an example that builds up a request and processes the results, using JSON
     
 Just some highlights:
 - You can pass a base URL to the `RestClient` constructor and just specify the path later.
-- You can use placeholders in your URLs so you don't have to constantly build strings.
+- You can use placeholders in your URLs so you don't have to constantly build strings (RFC 6570).
 - You can handle success (200 status codes) and errors (400+ status codes) separately.
 - Or, you can handle specific codes using the `When` methods.
 - Or, you can provide a catch-all using the `WhenUnhandled` method.
