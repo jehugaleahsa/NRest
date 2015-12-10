@@ -1,11 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using FakeServers;
 using FakeServers.Extractors;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 using NRest.Forms;
 using NRest.Json;
 using NRest.MultiPart;
@@ -245,6 +246,80 @@ namespace NRest.Tests
                     .Execute();
                 Assert.IsFalse(response.HasError, "An error occurred getting the number.");
                 Assert.AreEqual(4, response.GetResult<int>());
+            }
+        }
+
+        [TestMethod]
+        public void ShouldPostMultuPartWithQuotedName()
+        {
+            using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))
+            {
+                MultiPartBodyExtractor extractor = new MultiPartBodyExtractor();
+                server.UseBodyExtractor(extractor);
+
+                server.Listen();
+
+                RestClient client = new RestClient("http://localhost:8080");
+                client.Post("api/customers")
+                    .WithMultiPartBody(b =>
+                    {
+                        b.WithFormData(ub => ub.WithParameter("na\"me", "John Smith"));
+                    })
+                    .Execute();
+
+                Assert.AreEqual("John Smith", extractor.Parameters["na_me"], "The form data was not transfered.");
+            }
+        }
+
+        [TestMethod]
+        public void ShouldPostMultuPartWithInvalidCharacter()
+        {
+            using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))
+            {
+                MultiPartBodyExtractor extractor = new MultiPartBodyExtractor();
+                server.UseBodyExtractor(extractor);
+
+                server.Listen();
+
+                RestClient client = new RestClient("http://localhost:8080");
+                client.Post("api/customers")
+                    .WithMultiPartBody(b =>
+                    {
+                        b.WithFormData(ub => ub.WithParameter("naӼme", "John Smith"));
+                    })
+                    .Execute();
+
+                Assert.AreEqual("John Smith", extractor.Parameters["na?me"], "The form data was not transfered.");
+            }
+        }
+
+        [TestMethod]
+        public void ShouldPostMultuPartWithBase64Content()
+        {
+            using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))
+            {
+                MultiPartBodyExtractor extractor = new MultiPartBodyExtractor();
+                server.UseBodyExtractor(extractor);
+
+                server.Listen();
+
+                string message = "Hello, World!Ӽ!";
+                byte[] messageRaw = Encoding.UTF8.GetBytes(message);
+                string base64 = Convert.ToBase64String(messageRaw);
+                byte[] base64Raw = Encoding.UTF8.GetBytes(base64);
+                NameValueCollection headers = new NameValueCollection();
+                headers.Add("Content-Transfer-Encoding", "base64");
+
+                RestClient client = new RestClient("http://localhost:8080");
+                client.Post("api/customers")
+                    .WithMultiPartBody(b =>
+                    {
+                        b.WithFile("file", "file.txt", base64Raw, "text/plain", headers);
+                    })
+                    .Execute();
+
+                var file = extractor.Files["file"].Single();
+                CollectionAssert.AreEqual(base64Raw, file.Contents);
             }
         }
     }

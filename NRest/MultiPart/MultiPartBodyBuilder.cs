@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using NRest.Forms;
@@ -56,20 +58,21 @@ namespace NRest.MultiPart
             return this;
         }
 
-        public IMultiPartBodyBuilder WithFile(string name, string fileName, byte[] content, string contentType = null)
+        public IMultiPartBodyBuilder WithFile(string name, string fileName, byte[] content, string contentType = null, NameValueCollection headers = null)
         {
             MultiPartFile file = new MultiPartFile()
             {
                 Name = name,
                 FileName = fileName,
                 ContentType = contentType,
-                Writer = MultiPartFile.GetStreamWriter(new MemoryStream(content))
+                Writer = MultiPartFile.GetStreamWriter(new MemoryStream(content)),
+                Headers = headers ?? new NameValueCollection()
             };
             fileStreams.Add(file);
             return this;
         }
 
-        public IMultiPartBodyBuilder WithFile(string name, string fileName, Stream fileStream, string contentType = null)
+        public IMultiPartBodyBuilder WithFile(string name, string fileName, Stream fileStream, string contentType = null, NameValueCollection headers = null)
         {
 
             MultiPartFile file = new MultiPartFile()
@@ -77,20 +80,22 @@ namespace NRest.MultiPart
                 Name = name,
                 FileName = fileName,
                 ContentType = contentType,
-                Writer = MultiPartFile.GetStreamWriter(fileStream)
+                Writer = MultiPartFile.GetStreamWriter(fileStream),
+                Headers = headers ?? new NameValueCollection()
             };
             fileStreams.Add(file);
             return this;
         }
 
-        public IMultiPartBodyBuilder WithFile(string name, string path, string contentType = null)
+        public IMultiPartBodyBuilder WithFile(string name, string filePath, string contentType = null, NameValueCollection headers = null)
         {
             MultiPartFile file = new MultiPartFile()
             {
                 Name = name,
-                FileName = Path.GetFileName(path),
+                FileName = Path.GetFileName(filePath),
                 ContentType = contentType,
-                Writer = MultiPartFile.GetPathWriter(path)
+                Writer = MultiPartFile.GetPathWriter(filePath),
+                Headers = headers ?? new NameValueCollection()
             };
             fileStreams.Add(file);
             return this;
@@ -117,18 +122,6 @@ namespace NRest.MultiPart
             writer.Write(section);
         }
 
-        private static string getFormDataSection(NameValueCollection collection, string name)
-        {
-            StringBuilder builder = new StringBuilder();
-            builder.Append("--" + Boundary);
-            builder.Append(newLine);
-            builder.Append("Content-Disposition: form-data; name=\"" + name + "\"");
-            builder.Append(newLine + newLine);
-            builder.Append(collection.Get(name));
-            builder.Append(newLine);
-            return builder.ToString();
-        }
-
         private static void writeFile(StreamWriter writer, MultiPartFile file)
         {
             string header = getFileSectionHeader(file);
@@ -138,28 +131,10 @@ namespace NRest.MultiPart
             writer.Write(newLine);
         }
 
-        private static string getFileSectionHeader(MultiPartFile file)
-        {
-            StringBuilder builder = new StringBuilder();
-            builder.Append("--" + Boundary);
-            builder.Append(newLine);
-            builder.Append("Content-Disposition: form-data; name=\"" + file.Name + "\"; filename=\"" + file.FileName + "\"");
-            builder.Append(newLine);
-            builder.Append("Content-Type: " + (file.ContentType ?? "application/octet-stream"));
-            builder.Append(newLine + newLine);
-            return builder.ToString();
-        }
-
         private static void writeFooter(StreamWriter writer)
         {
             string footer = getFooter();
             writer.Write(footer);
-        }
-
-        private static string getFooter()
-        {
-            const string footer = "--" + Boundary + "--" + newLine;
-            return footer;
         }
 
         async Task IRequestBodyBuilder.BuildAsync(Stream stream, Encoding encoding)
@@ -196,6 +171,75 @@ namespace NRest.MultiPart
         {
             string footer = getFooter();
             await writer.WriteAsync(footer);
+        }
+
+        private static string getFormDataSection(NameValueCollection collection, string name)
+        {
+            WebHeaderCollection headers = new WebHeaderCollection();
+            headers.Add("Content-Disposition", "form-data");
+            headers.Add("Content-Disposition", "name=\"" + escapeQuotes(name) + "\"");
+
+            StringBuilder builder = new StringBuilder();
+            builder.Append("--" + Boundary + newLine);
+
+            writeHeaders(builder, headers);
+
+            builder.Append(collection.Get(name));
+            builder.Append(newLine);
+
+            return builder.ToString();
+        }
+
+        private static string getFileSectionHeader(MultiPartFile file)
+        {
+            WebHeaderCollection headers = new WebHeaderCollection();
+            headers.Add(file.Headers);
+            headers.Add("Content-Disposition", "form-data");
+            headers.Add("Content-Disposition", "name=\"" + escapeQuotes(file.Name) + "\"");
+            headers.Add("Content-Disposition", "filename=\"" + escapeQuotes(file.FileName) + "\"");
+            headers.Add("Content-Type", file.ContentType ?? "application/octet-stream");
+
+            StringBuilder builder = new StringBuilder();
+            builder.Append("--" + Boundary + newLine);
+
+            writeHeaders(builder, headers);
+
+            return builder.ToString();
+        }
+
+        private static string getFooter()
+        {
+            const string footer = "--" + Boundary + "--" + newLine;
+            return footer;
+        }
+
+        private static void writeHeaders(StringBuilder builder, WebHeaderCollection headers)
+        {
+            foreach (string key in headers.AllKeys)
+            {
+                builder.Append(escape(key));
+                builder.Append(": ");
+                string[] values = headers.GetValues(key).Select(v => escape(v)).ToArray();
+                string joinedValues = String.Join("; ", values);
+                builder.Append(joinedValues);
+                builder.Append(newLine);
+            }
+            builder.Append(newLine);
+        }
+
+        private static string escape(string value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+            string result = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(value));
+            return result;
+        }
+
+        private static string escapeQuotes(string value)
+        {
+            return value == null ? null : value.Replace("\"", "_");
         }
     }
 }

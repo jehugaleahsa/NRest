@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Specialized;
 using System.IO;
 
 namespace NRest.MultiPart
@@ -14,6 +14,8 @@ namespace NRest.MultiPart
         public byte[] Contents { get; set; }
 
         internal IMultiPartFileWriter Writer { get; set; }
+
+        internal NameValueCollection Headers { get; set; }
 
         internal static IMultiPartFileWriter GetPathWriter(string path)
         {

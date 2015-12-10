@@ -11,10 +11,10 @@ namespace NRest.MultiPart
 
         IMultiPartBodyBuilder WithFormData(Action<IUrlEncodedBodyBuilder> formDataBuilder);
 
-        IMultiPartBodyBuilder WithFile(string name, string path, byte[] content, string contentType = null);
+        IMultiPartBodyBuilder WithFile(string name, string fileName, byte[] content, string contentType = null, NameValueCollection headers = null);
 
-        IMultiPartBodyBuilder WithFile(string name, string path, Stream fileStream, string contentType = null);
+        IMultiPartBodyBuilder WithFile(string name, string fileName, Stream fileStream, string contentType = null, NameValueCollection headers = null);
 
-        IMultiPartBodyBuilder WithFile(string name, string path, string contentType = null);
+        IMultiPartBodyBuilder WithFile(string name, string filePath, string contentType = null, NameValueCollection headers = null);
     }
 }
