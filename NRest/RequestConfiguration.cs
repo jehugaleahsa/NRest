@@ -60,6 +60,25 @@ namespace NRest
             return this;
         }
 
+        public IRequestConfiguration WithHeader(string name, int? value)
+        {
+            this.headers.Add(name, value.ToString());
+            return this;
+        }
+
+        public IRequestConfiguration WithHeaders(NameValueCollection collection)
+        {
+            this.headers.Add(collection);
+            return this;
+        }
+
+        public IRequestConfiguration WithHeaders(object parameters)
+        {
+            NameValueCollection collection = NameValueCollectionExtensions.CreateNameValueCollection(parameters);
+            this.headers.Add(collection);
+            return this;
+        }
+
         public IRequestConfiguration WithQueryParameter(string name, string value)
         {
             this.queryParameters.Add(name, value);
@@ -78,6 +97,13 @@ namespace NRest
             {
                 throw new ArgumentNullException("collection");
             }
+            this.queryParameters.Add(collection);
+            return this;
+        }
+
+        public IRequestConfiguration WithQueryParameters(object parameters)
+        {
+            NameValueCollection collection = NameValueCollectionExtensions.CreateNameValueCollection(parameters);
             this.queryParameters.Add(collection);
             return this;
         }

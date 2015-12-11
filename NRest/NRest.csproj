@@ -58,6 +58,9 @@
     <Compile Include="Authentication\BasicAuthenticationExtensions.cs" />
     <Compile Include="Authentication\NtlmAuthenticationExtensions.cs" />
     <Compile Include="Authentication\OAuth2AuthenticationExtensions.cs" />
+    <Compile Include="Reflection\DictionaryPropertyLookup.cs" />
+    <Compile Include="Reflection\IProperty.cs" />
+    <Compile Include="Reflection\IPropertyLookup.cs" />
     <Compile Include="IRequestBodyBuilder.cs" />
     <Compile Include="IRestClient.cs" />
     <Compile Include="Json\JsonBodyBuilder.cs" />
@@ -75,6 +78,8 @@
     <Compile Include="MultiPart\MultiPartResponse.cs" />
     <Compile Include="MultiPart\PathSourceMultiPartFileWriter.cs" />
     <Compile Include="MultiPart\StreamSourceMultiPartFileWriter.cs" />
+    <Compile Include="Reflection\ObjectPropertyLookup.cs" />
+    <Compile Include="Reflection\PropertyLookup.cs" />
     <Compile Include="StreamWriter.cs" />
     <Compile Include="UriTemplates\ConstantGenerator.cs" />
     <Compile Include="UriTemplates\ISectionGenerator.cs" />

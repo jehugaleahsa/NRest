@@ -74,6 +74,24 @@ namespace NRest.Tests
         }
 
         [TestMethod]
+        public void ShouldGETWithQueryParametersObject()
+        {
+            using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))
+            {
+                var extractor = new RequestExtractor();
+                server.UseBodyExtractor(extractor);
+                server.Listen();
+
+                RestClient client = new RestClient();
+                var response = client.Get("http://localhost:8080/api/customers")
+                    .WithQueryParameters(new { customerid = 123 })
+                    .Execute();
+
+                Assert.AreEqual("123", extractor.QueryString["customerid"], "The ID was not passed.");
+            }
+        }
+
+        [TestMethod]
         public void ShouldGETWithCustomHeader()
         {
             using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))
@@ -85,6 +103,25 @@ namespace NRest.Tests
                 RestClient client = new RestClient();
                 var response = client.Get("http://localhost:8080/api/customers")
                     .WithHeader("test_header", "test_value")
+                    .Execute();
+
+                var value = extractor.Headers.Get("test_header");
+                Assert.AreEqual("test_value", value, "The header was not passed to the server.");
+            }
+        }
+
+        [TestMethod]
+        public void ShouldGETWithCustomHeadersObject()
+        {
+            using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))
+            {
+                var extractor = new RequestExtractor();
+                server.UseBodyExtractor(extractor);
+                server.Listen();
+
+                RestClient client = new RestClient();
+                var response = client.Get("http://localhost:8080/api/customers")
+                    .WithHeaders(new { test_header = "test_value" })
                     .Execute();
 
                 var value = extractor.Headers.Get("test_header");
@@ -108,6 +145,36 @@ namespace NRest.Tests
                         .WithParameter("Name", "Bob Smith")
                         .WithParameter("Age", 31)
                         .WithParameter("Title", "Mr."))
+                    .Execute();
+
+                string name = bodyExtractor.Parameters["Name"];
+                string age = bodyExtractor.Parameters["Age"];
+                string title = bodyExtractor.Parameters["Title"];
+
+                Assert.AreEqual("Bob Smith", name, "The name was not sent.");
+                Assert.AreEqual("31", age, "The age was not sent.");
+                Assert.AreEqual("Mr.", title, "The title was not sent.");
+            }
+        }
+
+        [TestMethod]
+        public void ShouldPOSTWithFormDataObject()
+        {
+            using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))
+            {
+                var bodyExtractor = new UrlEncodedBodyExtractor();
+                var extractor = new RequestExtractor(bodyExtractor);
+                server.UseBodyExtractor(extractor);
+                server.Listen();
+
+                RestClient client = new RestClient();
+                var response = client.Post("http://localhost:8080/api/customers")
+                    .WithUrlEncodedBody(new
+                    {
+                        Name = "Bob Smith",
+                        Age = 31,
+                        Title = "Mr."
+                    })
                     .Execute();
 
                 string name = bodyExtractor.Parameters["Name"];

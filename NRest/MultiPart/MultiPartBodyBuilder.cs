@@ -46,6 +46,13 @@ namespace NRest.MultiPart
             return this;
         }
 
+        public IMultiPartBodyBuilder WithFormData(object parameters)
+        {
+            NameValueCollection collection = NameValueCollectionExtensions.CreateNameValueCollection(parameters);
+            formData.Add(collection);
+            return this;
+        }
+
         public IMultiPartBodyBuilder WithFormData(Action<IUrlEncodedBodyBuilder> formDataBuilder)
         {
             if (formDataBuilder == null)

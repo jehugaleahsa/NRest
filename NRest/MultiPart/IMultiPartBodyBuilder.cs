@@ -9,6 +9,8 @@ namespace NRest.MultiPart
     {
         IMultiPartBodyBuilder WithFormData(NameValueCollection formData);
 
+        IMultiPartBodyBuilder WithFormData(object parameters);
+
         IMultiPartBodyBuilder WithFormData(Action<IUrlEncodedBodyBuilder> formDataBuilder);
 
         IMultiPartBodyBuilder WithFile(string name, string fileName, byte[] content, string contentType = null, NameValueCollection headers = null);

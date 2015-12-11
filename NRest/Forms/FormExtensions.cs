@@ -38,6 +38,18 @@ namespace NRest.Forms
                 .WithBodyBuilder(new UrlEncodedBodyBuilder(collection));
         }
 
+        public static IRequestConfiguration WithUrlEncodedBody(this IRequestConfiguration configuration, object parameters)
+        {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+            NameValueCollection collection = NameValueCollectionExtensions.CreateNameValueCollection(parameters);
+            return configuration
+                .ConfigureRequest(r => r.ContentType = ContentType)
+                .WithBodyBuilder(new UrlEncodedBodyBuilder(collection));
+        }
+
         public static IRequestConfiguration WithUrlEncodedBody(this IRequestConfiguration configuration, Action<IUrlEncodedBodyBuilder> formBuilder)
         {
             if (configuration == null)

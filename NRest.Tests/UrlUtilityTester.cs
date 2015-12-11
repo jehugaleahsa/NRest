@@ -19,5 +19,16 @@ namespace NRest.Tests
             string decoded = WebUtility.UrlDecode(url);
             Assert.AreEqual("Hello World!", decoded);
         }
+
+        /// <summary>
+        /// This test verifies that UrlEncode properly ignores null values.
+        /// </summary>
+        [TestMethod]
+        public void ShouldEncodeNull()
+        {
+            string value = null;
+            string encoded = WebUtility.UrlEncode(value);
+            Assert.IsNull(encoded);
+        }
     }
 }

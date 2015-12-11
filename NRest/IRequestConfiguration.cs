@@ -15,11 +15,19 @@ namespace NRest
 
         IRequestConfiguration WithHeader(string name, string value);
 
+        IRequestConfiguration WithHeader(string name, int? value);
+
+        IRequestConfiguration WithHeaders(NameValueCollection collection);
+
+        IRequestConfiguration WithHeaders(object parameters);
+
         IRequestConfiguration WithQueryParameter(string name, string value);
 
         IRequestConfiguration WithQueryParameter(string name, int? value);
 
         IRequestConfiguration WithQueryParameters(NameValueCollection collection);
+
+        IRequestConfiguration WithQueryParameters(object parameters);
 
         IRequestConfiguration WithBodyBuilder(IRequestBodyBuilder builder);
 

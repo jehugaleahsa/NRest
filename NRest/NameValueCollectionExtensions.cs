@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using NRest.ModelBinders;
+using NRest.Reflection;
 
 namespace NRest
 {
@@ -68,6 +69,31 @@ namespace NRest
             }
             NameValueCollectionModelBinder<T> binder = new NameValueCollectionModelBinder<T>(collection);
             binder.Bind(instance);
+        }
+
+        internal static NameValueCollection CreateNameValueCollection(object instance)
+        {
+            NameValueCollection collection = new NameValueCollection();
+            IPropertyLookup lookup = PropertyLookup.CreatePropertyLookup(instance);
+            foreach (IProperty property in lookup.GetProperties())
+            {
+                var values = PropertyLookup.GetValues(property, false)
+                    .Where(v => !(v is Tuple<string, object>));
+                foreach (object value in values)
+                {
+                    collection.Add(property.Name, escape(value));
+                }
+            }
+            return collection;
+        }
+
+        private static string escape(object value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+            return value.ToString();
         }
     }
 }
