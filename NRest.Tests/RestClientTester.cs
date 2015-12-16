@@ -317,7 +317,7 @@ namespace NRest.Tests
         }
 
         [TestMethod]
-        public void ShouldPostMultuPartWithQuotedName()
+        public void ShouldPostMultiPartWithQuotedName()
         {
             using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))
             {

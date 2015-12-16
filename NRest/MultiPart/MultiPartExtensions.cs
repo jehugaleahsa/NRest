@@ -2,7 +2,7 @@
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using HttpMultipartParser;
+using System.Text;
 
 namespace NRest.MultiPart
 {
@@ -52,28 +52,70 @@ namespace NRest.MultiPart
 
             using (Stream responseStream = response.Response.GetResponseStream())
             {
-                MultipartFormDataParser parser = new MultipartFormDataParser(responseStream, boundary);
+                Encoding encoding = response.Response.ContentEncoding == null
+                    ? Encoding.UTF8
+                    : Encoding.GetEncoding(response.Response.ContentEncoding);
+                StreamingMultiPartParser parser = new StreamingMultiPartParser(responseStream, encoding, boundary);
 
                 MultiPartFileLookup fileLookup = new MultiPartFileLookup();
-                foreach (var parsedFile in parser.Files)
-                {
-                    var file = new MultiPartFile()
-                    {
-                        Name = parsedFile.Name,
-                        FileName = parsedFile.FileName,
-                        ContentType = parsedFile.ContentType,
-                    };
-                    file.Contents = copyData(parsedFile.Data);
-                    fileLookup.Add(file.Name, file);
-                }
-
                 NameValueCollection collection = new NameValueCollection();
-                foreach (var parsedParameter in parser.Parameters)
+                parser.SectionFound += (o, e) =>
                 {
-                    collection.Add(parsedParameter.Name, parsedParameter.Data);
-                }
+                    var data = getSectionData(e);
+                    if (data == null)
+                    {
+                        return;
+                    }
+                    if (String.IsNullOrWhiteSpace(data.FileName))
+                    {
+                        string value = encoding.GetString(data.Contents);
+                        collection.Add(data.Name, value);
+                    }
+                    else
+                    {
+                        var file = new MultiPartFile()
+                        {
+                            Name = data.Name,
+                            FileName = data.FileName,
+                            ContentType = data.ContentType,
+                            Contents = data.Contents
+                        };
+                        fileLookup.Add(file.Name, file);
+                    }
+                };
                 return new MultiPartResponse() { Files = fileLookup, FormData = collection };
             }
+        }
+
+        private static SectionData getSectionData(MultiPartSection section)
+        {
+            string contentDisposition = section.Headers["Content-Disposition"];
+            if (contentDisposition == null)
+            {
+                return null;
+            }
+            string[] parts = contentDisposition.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Trim())
+                .ToArray();
+            var lookup = parts
+                .Select(p => p.Split(new char[] { '=' }, 2))
+                .Where(p => p.Length == 2)
+                .ToLookup(p => p[0], p => p[1].Trim(' ', '"'), StringComparer.CurrentCultureIgnoreCase);
+            SectionData data = new SectionData();
+            data.Name = getName(lookup["name"].FirstOrDefault());
+            data.FileName = getName(lookup["filename"].FirstOrDefault());
+            data.ContentType = section.Headers["Content-Type"];
+            data.Contents = copyData(section.Content);
+            return data;
+        }
+
+        private static string getName(string value)
+        {
+            if (String.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+            return value;
         }
 
         private static byte[] copyData(Stream source)
@@ -81,6 +123,17 @@ namespace NRest.MultiPart
             MemoryStream destination = new MemoryStream();
             source.CopyTo(destination);
             return destination.ToArray();
+        }
+
+        private class SectionData
+        {
+            public string Name { get; set; }
+
+            public string FileName { get; set; }
+
+            public string ContentType { get; set; }
+
+            public byte[] Contents { get; set; }
         }
     }
 }
