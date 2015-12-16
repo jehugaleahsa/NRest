@@ -323,43 +323,36 @@ B0GYJEcCshsPGLwg3IN8YlmbjzBS5dCufaN8WCLpWeP6VRTXcPTQFOYPSeWriSfGdXIlucWAziFw6aaT
             List<MultiPartSection> sections = new List<MultiPartSection>();
 
             StreamingMultiPartParser parser = new StreamingMultiPartParser(bodyStream, encoding, boundary);
-            MemoryStream preambleStream = null;
-            MemoryStream epilogueStream = null;
-            parser.PreambleFound += (o, e) => preambleStream = e;
+            string parsedPreamble = null;
+            string parsedEpilogue = null;
+            parser.PreambleFound += (o, e) => parsedPreamble = toString(encoding, e);
             parser.SectionFound += (o, e) => sections.Add(e);
-            parser.EpilogueFound += (o, e) => epilogueStream = e;
+            parser.EpilogueFound += (o, e) => parsedEpilogue = toString(encoding, e);
 
             parser.Parse().Wait();
 
-            using (StreamReader preambleReader = new StreamReader(preambleStream, encoding))
-            {
-                string parsedPreamble = preambleReader.ReadToEnd();
-                Assert.AreEqual(preamble, parsedPreamble, "The preample was not read correctly.");
-            }
+            Assert.AreEqual(preamble, parsedPreamble, "The preample was not read correctly.");
 
             Assert.AreEqual(2, sections.Count, "Two sections should have been parsed from the body.");
             var section1 = sections[0];
             Assert.AreEqual(formDataHeaderValue1, section1.Headers[formDataHeaderName1], "The first header was not parsed.");
-            using (StreamReader formDataReader = new StreamReader(section1.Content, encoding))
-            {
-                string parsedFormData = formDataReader.ReadToEnd();
-                Assert.AreEqual(formData, parsedFormData, "The form data was not read correctly.");
-            }
+            string parsedFormData = toString(encoding, section1.Content);
+            Assert.AreEqual(formData, parsedFormData, "The form data was not read correctly.");
 
             var section2 = sections[1];
             Assert.AreEqual(formDataHeaderValue2, section2.Headers[formDataHeaderName2], "The second header was not parsed.");
             Assert.AreEqual(formDataHeaderValue3, section2.Headers[formDataHeaderName3], "The third header was not parsed.");
-            using (StreamReader fileDataReader = new StreamReader(section2.Content, encoding))
-            {
-                string parsedFileData = fileDataReader.ReadToEnd();
-                Assert.AreEqual(fileData, parsedFileData, "The file data was not read correctly.");
-            }
+            string parsedFileData = toString(encoding, section2.Content);
+            Assert.AreEqual(fileData, parsedFileData, "The file data was not read correctly.");
 
-            using (StreamReader epilogueReader = new StreamReader(epilogueStream, encoding))
-            {
-                string parsedEpilogue = epilogueReader.ReadToEnd();
-                Assert.AreEqual(epilogue, parsedEpilogue, "The epilogue was not parsed.");
-            }
+            Assert.AreEqual(epilogue, parsedEpilogue, "The epilogue was not parsed.");
+        }
+
+        private static string toString(Encoding encoding, Stream stream)
+        {
+            MemoryStream destination = new MemoryStream();
+            stream.CopyTo(destination);
+            return encoding.GetString(destination.ToArray());
         }
 
         private static string getMultiPartContents()
@@ -385,23 +378,19 @@ B0GYJEcCshsPGLwg3IN8YlmbjzBS5dCufaN8WCLpWeP6VRTXcPTQFOYPSeWriSfGdXIlucWAziFw6aaT
             Encoding encoding = Encoding.UTF8;
             byte[] binaryContent = encoding.GetBytes(getMultiPartMixedContents());
             MemoryStream bodyStream = new MemoryStream(binaryContent);
-            List<MultiPartSection> sections = new List<MultiPartSection>();
 
+            List<MultiPartSection> sections = new List<MultiPartSection>();
             StreamingMultiPartParser parser = new StreamingMultiPartParser(bodyStream, encoding, "AaB03x");
-            parser.PreambleFound += (o, e) =>
-            {
-                string preamble = encoding.GetString(e.ToArray());
-                Console.Out.WriteLine(preamble);
-            };
-            parser.SectionFound += (o, e) =>
-            {
-                MemoryStream stream = new MemoryStream();
-                e.Content.CopyTo(stream);
-                string section = encoding.GetString(stream.ToArray());
-                Console.Out.WriteLine(section);
-            };
+            parser.PreambleFound += (o, e) => Assert.AreEqual(String.Empty, toString(encoding, e));
+            parser.SectionFound += (o, e) => sections.Add(e);
+            parser.EpilogueFound += (o, e) => Assert.AreEqual(String.Empty, toString(encoding, e));
 
             parser.Parse().Wait();
+
+            Assert.AreEqual(3, sections.Count, "The wrong number of sections were found.");
+            Assert.AreEqual("Larry", toString(encoding, sections[0].Content), "The first section content was wrong.");
+            Assert.AreEqual("... contents of file1.txt ...", toString(encoding, sections[1].Content), "The second section content was wrong.");
+            Assert.AreEqual("...contents of file2.gif...", toString(encoding, sections[2].Content), "The third section content was wrong.");
         }
 
         private static string getMultiPartMixedContents()
@@ -426,8 +415,131 @@ Content-Transfer-Encoding: binary
 
 ...contents of file2.gif...
 --BbC04y--
---AaB03x--";
+--AaB03x--
+";
             return contents;
+        }
+
+        [TestMethod]
+        public void ShouldHandleEmptyContent()
+        {
+            Encoding encoding = Encoding.UTF8;
+            byte[] binaryContent = encoding.GetBytes(String.Empty);
+            MemoryStream bodyStream = new MemoryStream(binaryContent);
+
+            StreamingMultiPartParser parser = new StreamingMultiPartParser(bodyStream, encoding, "AaB03x");
+            parser.PreambleFound += (o, e) => Assert.AreEqual(String.Empty, toString(encoding, e));
+            parser.SectionFound += (o, e) => Assert.Fail("No sections should be found if the contents are empty.");
+            parser.EpilogueFound += (o, e) => Assert.AreEqual(String.Empty, toString(encoding, e));
+
+            parser.Parse().Wait();
+        }
+
+        [TestMethod]
+        public void ShouldHandlePreambleOnly()
+        {
+            Encoding encoding = Encoding.UTF8;
+            const string preamble = "This is an invalid message containing only a preamble.";
+            byte[] binaryContent = encoding.GetBytes(preamble);
+            MemoryStream bodyStream = new MemoryStream(binaryContent);
+
+            StreamingMultiPartParser parser = new StreamingMultiPartParser(bodyStream, encoding, "AaB03x");
+            parser.PreambleFound += (o, e) => Assert.AreEqual(preamble, toString(encoding, e));
+            parser.SectionFound += (o, e) => Assert.Fail("No sections should be found if the contents are empty.");
+            parser.EpilogueFound += (o, e) => Assert.AreEqual(String.Empty, toString(encoding, e));
+
+            parser.Parse().Wait();
+        }
+
+        [TestMethod]
+        public void ShouldHandlePreambleWithStartBoundary()
+        {
+            Encoding encoding = Encoding.UTF8;
+            const string boundary = "ABC123abc456";
+            const string thisPreamble = "This is an invalid message containing only a preamble.";
+            const string contents = thisPreamble + @"
+--" + boundary;
+            byte[] binaryContent = encoding.GetBytes(contents);
+            MemoryStream bodyStream = new MemoryStream(binaryContent);
+            
+            StreamingMultiPartParser parser = new StreamingMultiPartParser(bodyStream, encoding, boundary);
+            parser.PreambleFound += (o, e) => Assert.AreEqual(thisPreamble, toString(encoding, e));
+            parser.SectionFound += (o, e) => Assert.Fail("No sections should be returned because the message ends prematurely.");
+            parser.EpilogueFound += (o, e) => Assert.AreEqual(String.Empty, toString(encoding, e));
+
+            parser.Parse().Wait();
+        }
+
+        [TestMethod]
+        public void ShouldHandleEndBoundaryOnly()
+        {
+            Encoding encoding = Encoding.UTF8;
+            const string boundary = "ABC123abc456";
+            const string contents = "--" + boundary + "--";
+            byte[] binaryContent = encoding.GetBytes(contents);
+            MemoryStream bodyStream = new MemoryStream(binaryContent);
+
+            StreamingMultiPartParser parser = new StreamingMultiPartParser(bodyStream, encoding, boundary);
+            parser.PreambleFound += (o, e) => Assert.AreEqual(String.Empty, toString(encoding, e));
+            parser.SectionFound += (o, e) => Assert.Fail("No sections should be returned if the content is just the end boundary.");
+            parser.EpilogueFound += (o, e) => Assert.AreEqual(String.Empty, toString(encoding, e));
+
+            parser.Parse().Wait();
+        }
+
+        [TestMethod]
+        public void ShouldHandleEndBoundaryWithEpilogue()
+        {
+            Encoding encoding = Encoding.UTF8;
+            const string boundary = "ABC123abc456";
+            const string epilogue = "This is an epilogue. It comes after the end-boundary.";
+            const string contents = "--" + boundary + @"--
+" + epilogue;
+            byte[] binaryContent = encoding.GetBytes(contents);
+            MemoryStream bodyStream = new MemoryStream(binaryContent);
+
+            StreamingMultiPartParser parser = new StreamingMultiPartParser(bodyStream, encoding, boundary);
+            parser.PreambleFound += (o, e) => Assert.AreEqual(String.Empty, toString(encoding, e));
+            parser.SectionFound += (o, e) => Assert.Fail("No sections should be returned if the content is just the end boundary.");
+            parser.EpilogueFound += (o, e) => Assert.AreEqual(epilogue, toString(encoding, e));
+
+            parser.Parse().Wait();
+        }
+
+        [TestMethod]
+        public void ShouldHandlePartialSection()
+        {
+            Encoding encoding = Encoding.UTF8;
+            const string contents = "--" + boundary + @"
+" + formDataHeaderName1 + ": " + formDataHeaderValue1 + @"
+";
+            byte[] binaryContent = encoding.GetBytes(contents);
+            MemoryStream bodyStream = new MemoryStream(binaryContent);
+
+            StreamingMultiPartParser parser = new StreamingMultiPartParser(bodyStream, encoding, boundary);
+            parser.PreambleFound += (o, e) => Assert.AreEqual(String.Empty, toString(encoding, e));
+            parser.SectionFound += (o, e) => Assert.Fail("No sections should be returned if the content is just the end boundary.");
+            parser.EpilogueFound += (o, e) => Assert.AreEqual(String.Empty, toString(encoding, e));
+
+            parser.Parse().Wait();
+        }
+
+        [TestMethod]
+        public void ShouldHandleEmptySections()
+        {
+            Encoding encoding = Encoding.UTF8;
+            const string contents = "--" + boundary + @"
+--" + boundary + @"
+--" + boundary + "--";
+            byte[] binaryContent = encoding.GetBytes(contents);
+            MemoryStream bodyStream = new MemoryStream(binaryContent);
+
+            StreamingMultiPartParser parser = new StreamingMultiPartParser(bodyStream, encoding, boundary);
+            parser.PreambleFound += (o, e) => Assert.AreEqual(String.Empty, toString(encoding, e));
+            parser.SectionFound += (o, e) => Assert.Fail("No sections should be returned if the content is just the end boundary.");
+            parser.EpilogueFound += (o, e) => Assert.AreEqual(String.Empty, toString(encoding, e));
+
+            parser.Parse().Wait();
         }
     }
 }

@@ -21,7 +21,7 @@ namespace NRest.MultiPart
         private readonly Buffer buffer;
 
         public StreamingMultiPartParser(Stream bodyStream, Encoding encoding, string boundary)
-            : this(bodyStream, encoding, boundary, null, new Buffer())
+            : this(bodyStream, encoding, boundary, null, new Buffer(encoding))
         {
         }
 
@@ -36,11 +36,11 @@ namespace NRest.MultiPart
             this.buffer = buffer;
         }
 
-        public event EventHandler<MemoryStream> PreambleFound;
+        public event EventHandler<Stream> PreambleFound;
 
         public event EventHandler<MultiPartSection> SectionFound;
 
-        public event EventHandler<MemoryStream> EpilogueFound;
+        public event EventHandler<Stream> EpilogueFound;
 
         public async Task Parse()
         {
@@ -50,13 +50,17 @@ namespace NRest.MultiPart
         private async Task parseInternal()
         {
             await parsePreamble();
-            while (!buffer.StartsWith(dashes))
+            while (!buffer.IsEmpty && !buffer.StartsWith(dashes))
             {
                 if (buffer.StartsWith(newLine))
                 {
                     buffer.Shift(newLine.Length);
                 }
                 await parseSection();
+            }
+            if (buffer.IsEmpty)
+            {
+                return;
             }
             if (buffer.StartsWith(newLine, dashes.Length))
             {
@@ -71,62 +75,11 @@ namespace NRest.MultiPart
 
         private async Task parsePreamble()
         {
-            MemoryStream content = await parseContent(boundary);
+            MemoryStream content = await parseContent(boundary, newLine);
             if (PreambleFound != null)
             {
                 PreambleFound(this, content);
             }
-        }
-
-        private async Task<MemoryStream> parseContent(byte[] boundary)
-        {
-            if (boundary == null)
-            {
-                return await parseRemainingContent();
-            }
-            else
-            {
-                return await parseContentUntilNextBoundary(boundary);
-            }        
-        }
-
-        private async Task<MemoryStream> parseRemainingContent()
-        {
-            MemoryStream contentStream = new MemoryStream();
-            await buffer.Fill(bodyStream);
-            while (!buffer.IsEmpty)
-            {
-                await buffer.CopyTo(contentStream);
-                await buffer.Fill(bodyStream);
-            }
-            contentStream.Position = 0;
-            return contentStream;
-        }
-
-        private async Task<MemoryStream> parseContentUntilNextBoundary(byte[] boundary)
-        {
-            MemoryStream contentStream = new MemoryStream();
-            await buffer.Fill(bodyStream);
-            int boundaryPosition = buffer.Find(boundary);
-            while (!buffer.IsEmpty && boundaryPosition == buffer.EndPosition)
-            {
-                await buffer.CopyHalf(contentStream);
-                await buffer.Fill(bodyStream);
-                boundaryPosition = buffer.Find(boundary);
-            }
-            // If the boundary is prefixed with a new line, throw the newline away
-            if (buffer.StartsWith(newLine, boundaryPosition - newLine.Length))
-            {
-                await buffer.CopyTo(contentStream, boundaryPosition - newLine.Length);
-                buffer.Shift(boundary.Length + newLine.Length);
-            }
-            else
-            {
-                await buffer.CopyTo(contentStream, boundaryPosition);
-                buffer.Shift(boundary.Length);
-            }
-            contentStream.Position = 0;
-            return contentStream;
         }
 
         private async Task parseSection()
@@ -134,7 +87,7 @@ namespace NRest.MultiPart
             // read headers
             NameValueCollection headers = new NameValueCollection();
             await buffer.Fill(bodyStream);
-            while (!buffer.StartsWith(newLine))
+            while (!buffer.IsEmpty && !buffer.StartsWith(newLine))
             {
                 string header = await parseHeader();
                 string[] parts = header.Split(new char[] { ':' }, 2);
@@ -143,13 +96,17 @@ namespace NRest.MultiPart
                     headers.Add(parts[0].Trim(), parts[1].Trim());
                 }
             }
+            if (buffer.IsEmpty)
+            {
+                return;
+            }
 
             // read content
             buffer.Shift(newLine.Length);
             string subBoundary = getSubBoundary(headers);
             if (subBoundary == null)
             {
-                MemoryStream content = await parseContent(boundary);
+                MemoryStream content = await parseContent(boundary, newLine);
                 if (SectionFound != null)
                 {
                     SectionFound(this, new MultiPartSection() { Headers = headers, Content = content });
@@ -168,7 +125,7 @@ namespace NRest.MultiPart
 
         private async Task<string> parseHeader()
         {
-            MemoryStream headerStream = await parseContent(newLine);
+            MemoryStream headerStream = await parseContent(newLine, null);
             string header = encoding.GetString(headerStream.ToArray());
             return header;
         }
@@ -196,11 +153,62 @@ namespace NRest.MultiPart
 
         private async Task parseEpilogue()
         {
-            MemoryStream content = await parseContent(outerBoundary);
+            MemoryStream content = await parseContent(outerBoundary, newLine);
             if (EpilogueFound != null)
             {
                 EpilogueFound(this, content);
             }
+        }
+
+        private async Task<MemoryStream> parseContent(byte[] boundary, byte[] prefix)
+        {
+            if (boundary == null)
+            {
+                return await parseRemainingContent();
+            }
+            else
+            {
+                return await parseContentUntilNextBoundary(boundary, prefix);
+            }
+        }
+
+        private async Task<MemoryStream> parseRemainingContent()
+        {
+            MemoryStream contentStream = new MemoryStream();
+            await buffer.Fill(bodyStream);
+            while (!buffer.IsEmpty)
+            {
+                await buffer.CopyTo(contentStream);
+                await buffer.Fill(bodyStream);
+            }
+            contentStream.Position = 0;
+            return contentStream;
+        }
+
+        private async Task<MemoryStream> parseContentUntilNextBoundary(byte[] boundary, byte[] prefix)
+        {
+            MemoryStream contentStream = new MemoryStream();
+            await buffer.Fill(bodyStream);
+            int boundaryPosition = buffer.Find(boundary);
+            while (!buffer.IsEmpty && boundaryPosition == buffer.EndPosition)
+            {
+                await buffer.CopyHalf(contentStream);
+                await buffer.Fill(bodyStream);
+                boundaryPosition = buffer.Find(boundary);
+            }
+            // If the boundary is prefixed with a new line, throw the newline away
+            if (prefix != null && buffer.StartsWith(prefix, boundaryPosition - prefix.Length))
+            {
+                await buffer.CopyTo(contentStream, boundaryPosition - prefix.Length);
+                buffer.Shift(boundary.Length + prefix.Length);
+            }
+            else
+            {
+                await buffer.CopyTo(contentStream, boundaryPosition);
+                buffer.Shift(boundary.Length);
+            }
+            contentStream.Position = 0;
+            return contentStream;
         }
 
         private static int findSequence(
@@ -254,10 +262,12 @@ namespace NRest.MultiPart
 
         private class Buffer
         {
+            private readonly Encoding encoding;
             private readonly byte[] buffer;
 
-            public Buffer()
+            public Buffer(Encoding encoding)
             {
+                this.encoding = encoding;
                 this.buffer = new byte[bufferSize + bufferSize];
             }
 
@@ -339,7 +349,7 @@ namespace NRest.MultiPart
 
             public override string ToString()
             {
-                string encoded = Encoding.UTF8.GetString(buffer, Position, EndPosition - Position);
+                string encoded = encoding.GetString(buffer, Position, EndPosition - Position);
                 return encoded;
             }
         }
