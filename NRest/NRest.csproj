@@ -54,7 +54,6 @@
     <Compile Include="Authentication\BasicAuthenticationExtensions.cs" />
     <Compile Include="Authentication\NtlmAuthenticationExtensions.cs" />
     <Compile Include="Authentication\OAuth2AuthenticationExtensions.cs" />
-    <Compile Include="MultiPart\MultiPartFormData.cs" />
     <Compile Include="MultiPart\MultiPartSection.cs" />
     <Compile Include="MultiPart\StreamingMultiPartParser.cs" />
     <Compile Include="Reflection\DictionaryPropertyLookup.cs" />
