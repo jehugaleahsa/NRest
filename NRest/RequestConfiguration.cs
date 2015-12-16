@@ -161,7 +161,7 @@ namespace NRest
             {
                 using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                 {
-                    return getSuccessResult(request, response);
+                    return getResult(request, response, null);
                 }
             }
             catch (WebException exception)
@@ -194,7 +194,7 @@ namespace NRest
             try
             {
                 HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
-                return getSuccessResult(request, response);
+                return getResult(request, response, null);
             }
             catch (WebException exception)
             {
@@ -304,25 +304,34 @@ namespace NRest
             request.Headers.Add(headersCopy);
         }
 
-        private IRestResponse getSuccessResult(HttpWebRequest request, HttpWebResponse response)
+        private IRestResponse getResult(HttpWebRequest request, HttpWebResponse response, Exception exception)
         {
             RestResponse result = new RestResponse();
+            result.Headers = new NameValueCollection(response.Headers);
             result.StatusCode = response.StatusCode;
-            result.HasError = false;
+            result.IsSuccessStatusCode = exception == null;
+            result.HasError = exception != null;
+            result.ReasonPhrase = response.StatusDescription;
+            result.Version = response.ProtocolVersion;
+
             WebResponse webResponse = new WebResponse()
             {
                 Request = request,
                 Response = response,
-                Exception = null
+                Exception = exception
             };
             if (codeHandlers.ContainsKey((int)response.StatusCode))
             {
                 Func<IWebResponse, object> handler = codeHandlers[(int)response.StatusCode];
                 result.Result = handler(webResponse);
             }
-            else if (successHandler != null)
+            else if (exception == null && successHandler != null)
             {
                 result.Result = successHandler(webResponse);
+            }
+            else if (exception != null && errorHandler != null)
+            {
+                result.Result = errorHandler(webResponse);
             }
             else if (unhandledHandler != null)
             {
@@ -339,28 +348,7 @@ namespace NRest
             {
                 throw new RestException(request, "An error occurred while processing the request.", exception);
             }
-            result.StatusCode = response.StatusCode;
-            result.HasError = true;
-            WebResponse webResponse = new WebResponse()
-            {
-                Request = request,
-                Response = response,
-                Exception = exception
-            };
-            if (codeHandlers.ContainsKey((int)response.StatusCode))
-            {
-                Func<IWebResponse, object> handler = codeHandlers[(int)response.StatusCode];
-                result.Result = handler(webResponse);
-            }
-            else if (errorHandler != null)
-            {
-                result.Result = errorHandler(webResponse);
-            }
-            else if (unhandledHandler != null)
-            {
-                result.Result = unhandledHandler(webResponse);
-            }
-            return result;
+            return getResult(request, response, exception);
         }
 
         private Encoding getBodyEncoding()
