@@ -317,11 +317,6 @@ B0GYJEcCshsPGLwg3IN8YlmbjzBS5dCufaN8WCLpWeP6VRTXcPTQFOYPSeWriSfGdXIlucWAziFw6aaT
         [TestMethod]
         public void ShouldParseMultiPartFile()
         {
-            Random random = new Random();
-            byte[] contents = new byte[4096];
-            random.NextBytes(contents);
-            string randomString = Convert.ToBase64String(contents);
-
             Encoding encoding = Encoding.UTF8;
             byte[] binaryContent = encoding.GetBytes(getMultiPartContents());
             MemoryStream bodyStream = new MemoryStream(binaryContent);
@@ -382,6 +377,57 @@ B0GYJEcCshsPGLwg3IN8YlmbjzBS5dCufaN8WCLpWeP6VRTXcPTQFOYPSeWriSfGdXIlucWAziFw6aaT
 --" + boundary + @"--
 " + epilogue;
             return content;
+        }
+
+        [TestMethod]
+        public void ShouldHandleMultiPartMixedContent()
+        {
+            Encoding encoding = Encoding.UTF8;
+            byte[] binaryContent = encoding.GetBytes(getMultiPartMixedContents());
+            MemoryStream bodyStream = new MemoryStream(binaryContent);
+            List<MultiPartSection> sections = new List<MultiPartSection>();
+
+            StreamingMultiPartParser parser = new StreamingMultiPartParser(bodyStream, encoding, "AaB03x");
+            parser.PreambleFound += (o, e) =>
+            {
+                string preamble = encoding.GetString(e.ToArray());
+                Console.Out.WriteLine(preamble);
+            };
+            parser.SectionFound += (o, e) =>
+            {
+                MemoryStream stream = new MemoryStream();
+                e.Content.CopyTo(stream);
+                string section = encoding.GetString(stream.ToArray());
+                Console.Out.WriteLine(section);
+            };
+
+            parser.Parse().Wait();
+        }
+
+        private static string getMultiPartMixedContents()
+        {
+            const string contents = @"--AaB03x
+Content-Disposition: form-data; name=""submit-name""
+
+Larry
+--AaB03x
+Content-Disposition: form-data; name=""files""
+Content-Type: multipart/mixed; boundary=BbC04y
+
+--BbC04y
+Content-Disposition: file; filename=""file1.txt""
+Content-Type: text/plain
+
+... contents of file1.txt ...
+--BbC04y
+Content-Disposition: file; filename=""file2.gif""
+Content-Type: image/gif
+Content-Transfer-Encoding: binary
+
+...contents of file2.gif...
+--BbC04y--
+--AaB03x--";
+            return contents;
         }
     }
 }
