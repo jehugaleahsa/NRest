@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("NRest")]
-[assembly: AssemblyDescription("A simple HTTP and REST client for making API calls using a fluent syntax.")]
+[assembly: AssemblyDescription("A simple .NET HTTP and REST client for making API calls using a fluent syntax.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Truncon")]
 [assembly: AssemblyProduct("NRest")]
@@ -11,6 +11,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("ef25bcfd-d3d9-43d6-b3c0-9db02924b672")]
-[assembly: AssemblyVersion("0.0.0.28")]
-[assembly: AssemblyFileVersion("0.0.0.28")]
+[assembly: AssemblyVersion("0.0.0.29")]
+[assembly: AssemblyFileVersion("0.0.0.29")]
 [assembly: CLSCompliant(true)]

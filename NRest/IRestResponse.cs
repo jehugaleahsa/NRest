@@ -12,8 +12,6 @@ namespace NRest
 
         bool IsSuccessStatusCode { get; }
 
-        bool HasError { get; }
-
         string ReasonPhrase { get; }
 
         Version Version { get; }

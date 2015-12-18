@@ -30,7 +30,7 @@ namespace NRest.Tests
                 var response = client.Get("http://localhost:8080/api/customers").Execute();
 
                 Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "The wrong status code was returned.");
-                Assert.IsFalse(response.HasError, "A success code was returned. There should be no error.");
+                Assert.IsTrue(response.IsSuccessStatusCode, "A success code was returned. There should be no error.");
                 Assert.IsNull(response.Result, "No WHEN handler was defined. The result should be null.");
             }
         }
@@ -311,7 +311,7 @@ namespace NRest.Tests
                 var response = client.Get("numbers")
                     .WhenSuccess(r => r.FromString<int>())
                     .Execute();
-                Assert.IsFalse(response.HasError, "An error occurred getting the number.");
+                Assert.IsTrue(response.IsSuccessStatusCode, "An error occurred getting the number.");
                 Assert.AreEqual(4, response.GetResult<int>());
             }
         }

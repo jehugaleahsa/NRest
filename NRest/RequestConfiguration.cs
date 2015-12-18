@@ -310,7 +310,6 @@ namespace NRest
             result.Headers = new NameValueCollection(response.Headers);
             result.StatusCode = response.StatusCode;
             result.IsSuccessStatusCode = exception == null;
-            result.HasError = exception != null;
             result.ReasonPhrase = response.StatusDescription;
             result.Version = response.ProtocolVersion;
 
