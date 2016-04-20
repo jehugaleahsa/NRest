@@ -232,6 +232,25 @@ namespace NRest.Tests
             }
         }
 
+        [TestMethod]
+        public void ShouldPOSTWithNoBody()
+        {
+            using (FakeHttpServer server = new FakeHttpServer("http://localhost:8080/api/customers"))
+            {
+                RequestExtractor extractor = new RequestExtractor();
+                server.UseBodyExtractor(extractor);
+                server.Listen();
+
+                RestClient client = new RestClient();
+                var response = client.Post("http://localhost:8080/api/customers")
+                    .WhenError(r => { throw new Exception(r.FromString<string>()); })
+                    .Execute();
+
+                string contentLength = extractor.Headers["Content-Length"];
+                Assert.AreEqual("0", contentLength, "The content length was not specified.");
+            }
+        }
+
         public class TestCustomer
         {
             public string Name { get; set; }
@@ -262,7 +281,7 @@ namespace NRest.Tests
 
                 Assert.AreEqual("John Smith", extractor.Parameters["name"], "The form data was not transfered.");
                 
-                var file = extractor.Files["file1"].SingleOrDefault();
+                var file = extractor.Files.GetFiles("file1").SingleOrDefault();
                 Assert.AreEqual("file1", file.Name);
                 Assert.AreEqual("path", file.FileName);
                 Assert.AreEqual("text/plain", file.ContentType);
@@ -291,7 +310,7 @@ namespace NRest.Tests
 
                 Assert.AreEqual("John Smith", extractor.Parameters["name"], "The form data was not transfered.");
 
-                var file = extractor.Files["file1"].SingleOrDefault();
+                var file = extractor.Files.GetFiles("file1").SingleOrDefault();
                 Assert.AreEqual("file1", file.Name);
                 Assert.AreEqual("path", file.FileName);
                 Assert.AreEqual("text/plain", file.ContentType);
@@ -385,7 +404,7 @@ namespace NRest.Tests
                     })
                     .Execute();
 
-                var file = extractor.Files["file"].Single();
+                var file = extractor.Files.GetFiles("file").Single();
                 CollectionAssert.AreEqual(base64Raw, file.Contents);
             }
         }

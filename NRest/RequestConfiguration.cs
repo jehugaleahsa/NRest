@@ -173,7 +173,11 @@ namespace NRest
         private HttpWebRequest createRequest()
         {
             HttpWebRequest request = createEmptyRequest();
-            if (bodyBuilder != null)
+            if (bodyBuilder == null)
+            {
+                request.ContentLength = 0;
+            }
+            else
             {
                 buildbody(request);
             }

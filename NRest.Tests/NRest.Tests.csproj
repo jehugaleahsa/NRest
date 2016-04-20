@@ -37,12 +37,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FakeServers, Version=0.0.0.9, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\FakeServers.0.0.0.9\lib\net45\FakeServers.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="HttpMultipartParser, Version=1.1.5.0, Culture=neutral, PublicKeyToken=6d293681fa6c7a03, processorArchitecture=MSIL">
-      <HintPath>..\packages\HttpMultipartParser.2.0.1\lib\net40\HttpMultipartParser.dll</HintPath>
+    <Reference Include="FakeServers, Version=0.0.0.11, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FakeServers.0.0.0.11\lib\net45\FakeServers.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
