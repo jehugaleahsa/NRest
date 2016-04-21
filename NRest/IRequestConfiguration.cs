@@ -13,6 +13,10 @@ namespace NRest
 
         IRequestConfiguration ConfigureRequest(Action<HttpWebRequest> configurator);
 
+        IRequestConfiguration WithTimeout(int milliseconds);
+
+        IRequestConfiguration WithTimeout(TimeSpan timeSpan);
+
         IRequestConfiguration WithHeader(string name, string value);
 
         IRequestConfiguration WithHeader(string name, int? value);

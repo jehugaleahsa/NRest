@@ -21,6 +21,7 @@ namespace NRest
         private Func<IWebResponse, object> errorHandler;
         private Func<IWebResponse, object> unhandledHandler;
         private IRequestBodyBuilder bodyBuilder;
+        private TimeSpan? timeout;
 
         public RequestConfiguration(Uri uri, string method)
         {
@@ -51,6 +52,18 @@ namespace NRest
                 throw new ArgumentNullException("configurator");
             }
             this.configurators.Add(configurator);
+            return this;
+        }
+
+        public IRequestConfiguration WithTimeout(int milliseconds)
+        {
+            this.timeout = TimeSpan.FromMilliseconds(milliseconds);
+            return this;
+        }
+
+        public IRequestConfiguration WithTimeout(TimeSpan timeSpan)
+        {
+            this.timeout = timeSpan;
             return this;
         }
 
@@ -233,6 +246,10 @@ namespace NRest
             if (useDefaultCredentials != null)
             {
                 request.UseDefaultCredentials = useDefaultCredentials.Value;
+            }
+            if (timeout != null)
+            {
+                request.Timeout = (int)timeout.Value.TotalMilliseconds;
             }
             if (credentials != null)
             {
