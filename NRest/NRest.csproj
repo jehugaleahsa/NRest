@@ -54,6 +54,7 @@
     <Compile Include="Authentication\BasicAuthenticationExtensions.cs" />
     <Compile Include="Authentication\NtlmAuthenticationExtensions.cs" />
     <Compile Include="Authentication\OAuth2AuthenticationExtensions.cs" />
+    <Compile Include="ModelBinders\BindingExtensions.cs" />
     <Compile Include="MultiPart\MultiPartSection.cs" />
     <Compile Include="MultiPart\StreamingMultiPartParser.cs" />
     <Compile Include="Reflection\DictionaryPropertyLookup.cs" />

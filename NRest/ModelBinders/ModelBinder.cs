@@ -8,7 +8,7 @@ namespace NRest.ModelBinders
 {
     public class ModelBinder<T> : IModelBinder<T>
     {
-        private readonly IWebResponse response;
+        private readonly CompoundModelBinder<T> binder;
 
         public ModelBinder(IWebResponse response)
         {
@@ -16,26 +16,33 @@ namespace NRest.ModelBinders
             {
                 throw new ArgumentNullException("response");
             }
-            this.response = response;
+            this.binder = getCompoundModelBinder(response);
         }
 
-        public void Bind(T instance)
+        private static CompoundModelBinder<T> getCompoundModelBinder(IWebResponse response)
         {
             // Extract property values from headers and the content
             CompoundModelBinder<T> binder = new CompoundModelBinder<T>();
             binder.AddBinder(new NameValueCollectionModelBinder<T>(response.Response.Headers));
-            if (response.Response.ContentType == JsonExtensions.ContentType)
+            StringComparison comparison = StringComparison.InvariantCultureIgnoreCase;
+            if (String.Compare(response.Response.ContentType, JsonExtensions.ContentType, comparison) == 0)
             {
                 binder.AddBinder(new JsonModelBinder<T>(response.FromString<string>()));
             }
-            else if (response.Response.ContentType == FormExtensions.ContentType)
+            else if (String.Compare(response.Response.ContentType, FormExtensions.ContentType, comparison) == 0)
             {
                 binder.AddBinder(new NameValueCollectionModelBinder<T>(response.FromForm()));
             }
-            else if (response.Response.ContentType.StartsWith(MultiPartExtensions.ContentTypePrefix))
+            else if (response.Response.ContentType.StartsWith(MultiPartExtensions.ContentTypePrefix, comparison))
             {
                 binder.AddBinder(new MultiPartModelBinder<T>(response.FromMultiPart()));
             }
+            return binder;
+        }
+
+        public void Bind(T instance)
+        {
+            binder.Bind(instance);
         }
     }
 }
