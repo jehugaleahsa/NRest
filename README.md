@@ -1,3 +1,5 @@
+> *Archived 2026-03-28*: This project is very old and will no longer be maintained. Because I have great timing, I created this library at about the same time .NET introduced `HttpClient`, making most of this library obsolete before it was even released. 😅
+
 # NRest
 
 A simple HTTP and REST client for making API calls using a fluent syntax.
